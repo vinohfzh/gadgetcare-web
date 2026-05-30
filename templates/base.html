@@ -1,25 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gadget Care Center</title>
+    <meta name="description" content="GadgetCare Center — Sistem antrean service gadget modern. Perbaikan smartphone, laptop, dan tablet dengan antrean online yang cepat, nyaman, dan transparan.">
+    <meta name="keywords" content="service gadget, perbaikan smartphone, antrean online, gadget care, service laptop">
+    <meta name="author" content="GadgetCare Center">
+
+    <title>{% block title %}GadgetCare Center — Service Gadget Modern{% endblock %}</title>
 
     {% load static %}
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-    {% block content %}
-    {% endblock %}
+    {% include 'partials/navbar.html' %}
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% include 'partials/footer.html' %}
+
+    <!-- JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
 
 </body>
 </html>

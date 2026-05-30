@@ -1,38 +1,29 @@
-<nav class="navbar navbar-expand-lg bg-white shadow-sm py-3">
-    <div class="container">
+{% load static %}
 
-        <a class="navbar-brand fw-bold" href="#">
-            GadgetCare
-        </a>
+<nav class="navbar" id="navbar">
+  <div class="container navbar__container">
+    <a href="/" class="navbar__logo" aria-label="GadgetCare Home">
+      <img src="{% static 'img/logo-gadgetcare.svg' %}" alt="GadgetCare Center Logo">
+    </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <ul class="navbar__menu" id="navMenu">
+      <li><a href="#hero" class="navbar__link active" id="nav-home">Beranda</a></li>
+      <li><a href="#features" class="navbar__link" id="nav-services">Layanan</a></li>
+      <li><a href="#steps" class="navbar__link" id="nav-tracking">Cek Status</a></li>
+      <li><a href="#cta" class="navbar__link" id="nav-about">Tentang Kami</a></li>
+      <li class="navbar__menu-cta">
+        <a href="#cta" class="btn btn--primary">Ambil Antrean</a>
+      </li>
+    </ul>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-
-            <ul class="navbar-nav ms-auto align-items-lg-center gap-3">
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Home</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Services</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Tracking</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="btn btn-dark px-4" href="#">
-                        Login
-                    </a>
-                </li>
-
-            </ul>
-
-        </div>
+    <div class="navbar__actions">
+      <a href="#cta" class="btn btn--primary btn--sm">Ambil Antrean</a>
     </div>
+
+    <button class="navbar__hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
 </nav>
