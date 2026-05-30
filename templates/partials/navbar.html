@@ -2,15 +2,14 @@
 
 <nav class="navbar" id="navbar">
   <div class="container navbar__container">
-    <a href="/" class="navbar__logo" aria-label="GadgetCare Home">
+    <a href="{% url 'home' %}" class="navbar__logo" aria-label="GadgetCare Home">
       <img src="{% static 'img/logo-gadgetcare.svg' %}" alt="GadgetCare Center Logo">
     </a>
 
     <ul class="navbar__menu" id="navMenu">
-      <li><a href="#hero" class="navbar__link active" id="nav-home">Beranda</a></li>
-      <li><a href="#features" class="navbar__link" id="nav-services">Layanan</a></li>
+      <li><a href="{% url 'home' %}" class="navbar__link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" id="nav-home">Beranda</a></li>
+      <li><a href="{% url 'layanan' %}" class="navbar__link {% if request.resolver_match.url_name == 'layanan' %}active{% endif %}" id="nav-services">Layanan</a></li>
       <li><a href="#steps" class="navbar__link" id="nav-tracking">Cek Status</a></li>
-      <li><a href="#cta" class="navbar__link" id="nav-about">Tentang Kami</a></li>
       <li class="navbar__menu-cta">
         <a href="#cta" class="btn btn--primary">Ambil Antrean</a>
       </li>

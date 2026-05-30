@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cek Status — GadgetCare Center{% endblock %}
+
+{% block content %}
+
+<section class="status-page" id="status-page">
+    <div class="container">
+
+        <!-- ======= GREETING HEADER ======= -->
+        <div class="status-greeting animate-on-scroll" id="status-greeting">
+            <h1 class="status-greeting__title">Halo, Rasya Cabang Pecabean</h1>
+            <p class="status-greeting__subtitle">Pantau status perbaikan perangkat Anda secara real-time.</p>
+        </div>
+
+        <!-- ======= TOP CARDS ROW ======= -->
+        <div class="status-top-row">
+
+            <!-- Active Service Card -->
+            <div class="status-active-card animate-on-scroll delay-1" id="status-active-card">
+                <!-- Header -->
+                <div class="status-active-card__header">
+                    <div class="status-active-card__info">
+                        <span class="status-active-card__label">Status Perbaikan Aktif</span>
+                        <h2 class="status-active-card__device">Samsung Galaxy S23 Ultra</h2>
+                        <p class="status-active-card__issue">Layar Retak &amp; Ganti Baterai</p>
+                    </div>
+                    <div class="status-badge status-badge--process">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>Proses</span>
+                    </div>
+                </div>
+
+                <!-- Progress Stepper -->
+                <div class="status-stepper" id="status-stepper">
+                    <div class="status-stepper__track">
+                        <div class="status-stepper__track-fill" style="width: 50%;"></div>
+                    </div>
+                    <div class="status-stepper__steps">
+                        <div class="status-stepper__step status-stepper__step--done">
+                            <div class="status-stepper__dot">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <span class="status-stepper__label">Menunggu</span>
+                        </div>
+                        <div class="status-stepper__step status-stepper__step--active">
+                            <div class="status-stepper__dot">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            </div>
+                            <span class="status-stepper__label">Diproses</span>
+                        </div>
+                        <div class="status-stepper__step status-stepper__step--pending">
+                            <div class="status-stepper__dot">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            </div>
+                            <span class="status-stepper__label">Sedang<br>diperbaiki</span>
+                        </div>
+                        <div class="status-stepper__step status-stepper__step--pending">
+                            <div class="status-stepper__dot">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </div>
+                            <span class="status-stepper__label">Selesai</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estimation Footer -->
+                <div class="status-active-card__footer">
+                    <div class="status-active-card__estimate">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <div class="status-active-card__estimate-info">
+                            <span class="status-active-card__estimate-label">Estimasi Selesai</span>
+                            <span class="status-active-card__estimate-value">Besok, 14:00 WIB</span>
+                        </div>
+                    </div>
+                    <a href="#" class="btn btn--outline btn--sm" id="status-detail-btn">Detail Servis</a>
+                </div>
+            </div>
+
+            <!-- Queue Number Card -->
+            <div class="status-queue-card animate-on-scroll delay-2" id="status-queue-card">
+                <div class="status-queue-card__decor status-queue-card__decor--top"></div>
+                <div class="status-queue-card__decor status-queue-card__decor--bottom"></div>
+
+                <div class="status-queue-card__content">
+                    <span class="status-queue-card__eyebrow">NOMOR ANTREAN ANDA</span>
+                    <h2 class="status-queue-card__number">A-042</h2>
+
+                    <div class="status-queue-card__info-row">
+                        <div class="status-queue-card__info-item">
+                            <span class="status-queue-card__info-label">Antrean Saat Ini</span>
+                            <span class="status-queue-card__info-value">A-039</span>
+                        </div>
+                        <div class="status-queue-card__info-item status-queue-card__info-item--right">
+                            <span class="status-queue-card__info-label">Sisa</span>
+                            <span class="status-queue-card__info-value">3 Orang</span>
+                        </div>
+                    </div>
+
+                    <div class="status-queue-card__notice">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>Silakan tunggu di ruang tunggu.</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ======= BOTTOM ROW ======= -->
+        <div class="status-bottom-row">
+
+            <!-- Service History Table -->
+            <div class="status-history animate-on-scroll delay-1" id="status-history">
+                <div class="status-history__header">
+                    <h2 class="status-history__title">Riwayat Servis</h2>
+                    <button class="status-history__view-all" id="status-view-all">
+                        Lihat Semua
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </div>
+
+                <div class="status-table-wrapper">
+                    <table class="status-table" id="status-table">
+                        <thead>
+                            <tr>
+                                <th>ID Servis</th>
+                                <th>Perangkat</th>
+                                <th>Tanggal</th>
+                                <th>Status</th>
+                                <th class="status-table__th-action">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>#GC-8901</code></td>
+                                <td>MacBook Pro M1</td>
+                                <td>12 Okt 2023</td>
+                                <td>
+                                    <span class="status-tag status-tag--success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+                                        Selesai
+                                    </span>
+                                </td>
+                                <td class="status-table__td-action">
+                                    <button class="status-table__action-btn" aria-label="Lihat detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>#GC-8742</code></td>
+                                <td>iPhone 13 Pro</td>
+                                <td>05 Sep 2023</td>
+                                <td>
+                                    <span class="status-tag status-tag--success">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+                                        Selesai
+                                    </span>
+                                </td>
+                                <td class="status-table__td-action">
+                                    <button class="status-table__action-btn" aria-label="Lihat detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>#GC-8105</code></td>
+                                <td>iPad Air 5</td>
+                                <td>22 Jun 2023</td>
+                                <td>
+                                    <span class="status-tag status-tag--cancel">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        Batal
+                                    </span>
+                                </td>
+                                <td class="status-table__td-action">
+                                    <button class="status-table__action-btn" aria-label="Lihat detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Notifications Panel -->
+            <div class="status-notifications animate-on-scroll delay-2" id="status-notifications">
+                <div class="status-notifications__header">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <h2 class="status-notifications__title">Pemberitahuan</h2>
+                </div>
+
+                <div class="status-notifications__list">
+                    <div class="status-notif-item status-notif-item--unread">
+                        <div class="status-notif-item__dot status-notif-item__dot--blue"></div>
+                        <div class="status-notif-item__body">
+                            <p class="status-notif-item__text">Teknisi telah mulai membongkar perangkat Anda.</p>
+                            <span class="status-notif-item__time">Hari ini, 10:15 WIB</span>
+                        </div>
+                    </div>
+                    <div class="status-notif-item">
+                        <div class="status-notif-item__dot"></div>
+                        <div class="status-notif-item__body">
+                            <p class="status-notif-item__text">Perangkat diterima di meja resepsionis.</p>
+                            <span class="status-notif-item__time">Hari ini, 09:30 WIB</span>
+                        </div>
+                    </div>
+                    <div class="status-notif-item status-notif-item--last">
+                        <div class="status-notif-item__dot"></div>
+                        <div class="status-notif-item__body">
+                            <p class="status-notif-item__text">Pendaftaran antrean berhasil (A-042).</p>
+                            <span class="status-notif-item__time">Hari ini, 09:15 WIB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}
