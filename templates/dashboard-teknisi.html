@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="{% static 'css/dashboard-teknisi.css' %}">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+.lucide { width: 100%; height: 100%; }
+.vector-wrapper-7 { padding: 4px; }
+.lucide-bell-ring { display: flex; align-items: center; justify-content: center; }
+.vector-wrapper { display: flex; align-items: center; justify-content: center; }
+</style>
+<title>Dashboard Teknisi</title>
+</head>
+<body>
+<div class="frame" ><div class="div" ><div class="div-2" >
+<img class="untitled-x" src="{% static 'img/logo-gadgetcare.svg' %}" />
+<div class="div-3" ><div class="div-4" ><div class="div-5" ><i data-lucide="plus" class="vector" style="color: white;" stroke-width="1.5"></i></div>
+<div class="text-wrapper" >Perbaikan Baru</div></div>
+<div class="div-6" ><div class="component" ><div class="div-7" ><i data-lucide="layout-dashboard" class="mage-dashboard" style="color: #0951C6;" stroke-width="1.5"></i>
+<div class="text-wrapper-2" >Dashboard</div></div>
+<div class="add-wrapper" ><div class="div-5" ><span class="img" style="background-color: #EBF8FE; border-radius: 50%; display: block; width: 100%; height: 100%;"></span>
+<div class="text-wrapper-3" >{{ available_tickets|length }}</div></div></div></div>
+<div class="component-2" ><div class="div-7" ><div class="div-5" ><i data-lucide="wrench" class="vector-2" style="color: #666666;" stroke-width="1.5"></i></div>
+<div class="text-wrapper-2" >Perbaikan</div></div></div>
+<div class="component-2" ><div class="div-7" ><div class="div-5" ><i data-lucide="package" class="vector-3" style="color: #666666;" stroke-width="1.5"></i></div>
+<div class="text-wrapper-2" >Inventaris</div></div></div>
+<div class="component-2" ><div class="div-7" ><div class="div-5" ><i data-lucide="bar-chart-3" class="vector-4" style="color: #666666;" stroke-width="1.5"></i></div>
+<div class="text-wrapper-2" >Laporan</div></div></div>
+<div class="component-2" ><div class="div-7" ><div class="div-5" ><i data-lucide="settings" class="vector-5" style="color: #666666;" stroke-width="1.5"></i></div>
+<div class="text-wrapper-2" >Pengaturan</div></div></div></div></div></div>
+<div class="div-6" ><div class="component-2" ><div class="div-7" ><div class="div-5" ><i data-lucide="help-circle" class="vector-3" style="color: #666666;" stroke-width="1.5"></i></div>
+<div class="text-wrapper-2" >Bantuan</div></div></div>
+<div class="component-3" ><div class="div-7" ><div class="vector-wrapper" ><i data-lucide="log-out" class="vector-6" style="color: #FF0000;" stroke-width="1.5"></i></div>
+<a href="{% url 'logout' %}" class="text-wrapper-4" style="text-decoration:none;">Keluar</a></div></div></div></div>
+<div class="div-8" ><div class="div-9" ><div class="div-10" ><div class="pajamas-search" ><i data-lucide="search" class="vector-7" style="color: #666666;" stroke-width="1.5"></i></div>
+<div class="text-wrapper-5" >Telusuri</div></div>
+<div class="div-11" ><div class="lucide-bell-ring" ><i data-lucide="bell" class="vector-8" style="color: #202224;" stroke-width="1.5"></i></div>
+<div class="div-12" ><div class="div-13" ><div class="text-wrapper-6" >{{ user.first_name }} {{ user.last_name }}</div>
+<div class="text-wrapper-7" >Teknisi</div></div>
+<img class="mask-group" style="border-radius: 50%;" src="https://ui-avatars.com/api/?name={{ user.first_name }}+{{ user.last_name }}&background=0D8ABC&color=fff&rounded=true" /></div></div></div>
+<div class="div-14" ><div class="greeting-header" ><div class="heading" ><div class="text-wrapper-8" >Ringkasan Teknisi</div></div>
+<div class="container" ><p class="p" >Kelola tiket layanan dan perbaikan aktif anda.</p></div></div>
+<div class="div-15" ><div class="frame-wrapper" ><div class="div-16" ><div class="div-17" ><div class="total-user" >MENUNGGU</div>
+<div class="div-18" ><div class="element" >{{ menunggu_count }}</div>
+<div class="div-19" ><div class="img-wrapper" ><i data-lucide="arrow-up" class="vector-9" style="color: #FF4D4D;" stroke-width="2"></i></div>
+<div class="element-2" style="color: #FF4D4D;">12</div></div>
+</div></div>
+<div class="icon" style="background-color: #FFF0F0;" ><div class="vector-wrapper-2" ><i data-lucide="calendar" class="vector-10" style="color:#FF4D4D;" stroke-width="1.5"></i></div></div></div></div>
+<div class="div-wrapper" ><div class="div-20" ><div class="div-21" ><div class="total-user-2" >SEDANG DI KERJAKAN</div>
+<div class="element-3" >{{ perbaikan_count }}</div></div>
+<div class="icon-2" style="background-color: #EBF8FE;" ><div class="vector-wrapper-3" ><i data-lucide="wrench" class="vector-11" style="color:#0951C6;" stroke-width="1.5"></i></div></div></div></div>
+<div class="frame-wrapper" ><div class="div-16" ><div class="div-21" ><p class="total-user-3" >SELESAI ( HARI INI )</p>
+<div class="div-18" ><div class="element" >{{ selesai_hari_ini_count }}</div>
+<div class="div-19" ><div class="img-wrapper" ><i data-lucide="arrow-up" class="vector-9" style="color: #10B981;" stroke-width="2"></i></div>
+<div class="element-4" style="color: #10B981;">4</div></div>
+</div></div>
+<div class="icon-3" style="background-color: #E8F5E9;" ><div class="vector-wrapper-4" ><i data-lucide="check" class="vector-12" style="color:#10B981;" stroke-width="1.5"></i></div></div></div></div></div></div>
+<div class="div-22" ><div class="div-23" ><div class="div-24" ><div class="text-wrapper-9" >Alur Kerja Aktif</div>
+<div class="div-25" ><div class="div-26" ><div class="vector-wrapper-5" ><i data-lucide="filter" class="vector-13" style="color: black;" stroke-width="1.5"></i></div>
+<div class="text-wrapper-10" >Filter</div></div>
+<div class="group" ><i data-lucide="chevron-down" class="vector-14" style="color: black;" stroke-width="1.5"></i></div></div></div>
+<div class="div-12" ><div class="div-27" ><div class="div-24" ><div class="text-wrapper-11" >Diagnosa</div>
+<div class="div-wrapper-2" ><div class="text-wrapper-12" >{{ diagnosa_count }}</div></div></div>
+{% for ticket in diagnosa_tickets %}
+<div class="div-28" ><div class="div-24" ><div class="TKT" >#{{ ticket.ticket_number }}</div>
+<div class="div-wrapper-3" ><div class="text-wrapper-13" >{{ ticket.get_priority_display }}</div></div></div>
+<div class="div-29" ><p class="text-wrapper-11" >{{ ticket.device_name }} - {{ ticket.complaint|truncatechars:30 }}</p>
+<p class="text-wrapper-14" >Harap segera lakukan diagnosa.</p></div>
+<div class="div-24" ><div class="div-30" ><div class="vector-wrapper-6" ><i data-lucide="clock" class="vector-16" style="color:gray;" stroke-width="1.5"></i></div>
+<div class="element-jam-lalu" >{{ ticket.updated_at|timesince }} Lalu</div></div>
+<div class="div-wrapper-4" ><a href="{% url 'update_ticket_status' ticket.id 'perbaikan' %}" class="text-wrapper-12" style="text-decoration:none;">Perbarui</a></div></div></div>
+{% endfor %}
+</div>
+<div class="div-27" ><div class="div-24" ><div class="text-wrapper-11" >Proses Perbaikan</div>
+<div class="div-wrapper-2" ><div class="text-wrapper-12" >{{ perbaikan_count }}</div></div></div>
+{% for ticket in perbaikan_tickets %}
+<div class="div-28" ><div class="div-24" ><div class="TKT-2" >#{{ ticket.ticket_number }}</div>
+<div class="div-wrapper-5" ><div class="text-wrapper-15" >{{ ticket.get_priority_display }}</div></div></div>
+<div class="div-32" ><p class="text-wrapper-11" >{{ ticket.device_name }} - {{ ticket.complaint|truncatechars:30 }}</p>
+<div class="rectangle-wrapper" ><div class="rectangle" ></div></div></div>
+<div class="div-24" ><div class="div-30" ><div class="vector-wrapper-6" ><i data-lucide="clock" class="vector-16" style="color:gray;" stroke-width="1.5"></i></div>
+<div class="element-jam-lalu" >{{ ticket.updated_at|timesince }} Lalu</div></div>
+<div class="div-33" ><a href="{% url 'update_ticket_status' ticket.id 'selesai' %}" class="text-wrapper-15" style="text-decoration:none;">Selesaikan</a></div></div></div>
+{% endfor %}
+</div></div></div>
+<div class="div-23" ><div class="text-wrapper-9" >Aktivitas Terbaru</div>
+<div class="div-34" >
+{% for act in activities|slice:":3" %}
+<div class="div-35" >
+  <div class="div-36" >
+    {% if act.icon_type == 'green' %}
+      <div class="frame-wrapper-2" ><div class="vector-wrapper-7" ><i data-lucide="check" class="vector-17" style="color: white;" stroke-width="1.5"></i></div></div>
+    {% elif act.icon_type == 'red' %}
+      <div class="frame-wrapper-5" ><div class="vector-wrapper-7" ><i data-lucide="alert-circle" class="vector-19" style="color: #FF0000;" stroke-width="1.5"></i></div></div>
+    {% else %}
+      <div class="frame-wrapper-4" ><div class="vector-wrapper-8" ><i data-lucide="clipboard" class="vector-18" style="color: #0951C6;" stroke-width="1.5"></i></div></div>
+    {% endif %}
+    {% if not forloop.last %}
+      <div style="width: 2px; height: 84px; background-color: #DAE5F6; margin-top: 5px;"></div>
+    {% endif %}
+  </div>
+  <div class="div-37" >
+    <div class="frame-wrapper-3" >
+      {% if act.icon_type == 'green' %}
+        <div class="div-38" >
+          <div class="text-wrapper-11" >{{ act.title }}</div>
+          <p class="text-wrapper-14" >{{ act.description }}</p>
+        </div>
+      {% elif act.icon_type == 'red' %}
+        <div class="div-40" >
+          <div class="text-wrapper-11" >{{ act.title }}</div>
+          <p class="text-wrapper-17" >{{ act.description }}</p>
+        </div>
+      {% else %}
+        <div class="div-39" >
+          <div class="text-wrapper-11" >{{ act.title }}</div>
+          <p class="text-wrapper-16" >{{ act.description }}</p>
+        </div>
+      {% endif %}
+    </div>
+    <div class="element-menit-lalu" >{{ act.created_at|timesince }} Lalu</div>
+  </div>
+</div>
+{% endfor %}
+</div></div></div>
+<div class="div-41" ><div class="text-wrapper-9" >Alur Kerja Aktif</div>
+<div class="div-42" ><div class="lihat-semua" >Lihat Semua</div>
+<div class="vector-wrapper-9" ><i data-lucide="chevron-right" class="vector-20" style="color:#0951C6;" stroke-width="1.5"></i></div></div></div>
+<div class="div-43" ><div class="div-44" ><div class="ID-TIKET-wrapper" ><div class="text-wrapper-18" >Id Tiket</div></div>
+{% for t in available_tickets %}
+<div class="div-wrapper-6" ><div class="TKT-3" >#{{ t.ticket_number }}</div></div>
+{% endfor %}
+</div>
+<div class="div-45" ><div class="div-wrapper-7" ><div class="text-wrapper-18" >Perangkat</div></div>
+{% for t in available_tickets %}
+<div class="div-46" ><div class="text-wrapper-19" >{{ t.device_name }}</div>
+<div class="text-wrapper-20" >{{ t.device_type }}</div></div>
+{% endfor %}
+</div>
+<div class="div-45" ><div class="div-wrapper-7" ><div class="text-wrapper-18" >Keluhan</div></div>
+{% for t in available_tickets %}
+<div class="div-wrapper-6" ><p class="text-wrapper-19" >{{ t.complaint|truncatechars:30 }}</p></div>
+{% endfor %}
+</div>
+<div class="div-47" ><div class="div-wrapper-7" ><div class="text-wrapper-18" >Estimasi Waktu</div></div>
+{% for t in available_tickets %}
+<div class="frame-wrapper-6" ><div class="element-hari-wrapper" ><div class="element-hari" >{{ t.estimation }}</div></div></div>
+{% endfor %}
+</div>
+<div class="div-48" ><div class="AKSI-wrapper" ><div class="text-wrapper-18" >Aksi</div></div>
+{% for t in available_tickets %}
+<div class="frame-wrapper-7" ><div class="div-49" ><div class="div-5" ><i data-lucide="inbox" class="vector-21" style="color:white;" stroke-width="1.5"></i></div>
+<a href="{% url 'claim_ticket' t.id %}" class="ambil-tiket" style="text-decoration:none;">Ambil Tiket</a></div></div>
+{% endfor %}
+</div></div></div></div>
+<script>
+  lucide.createIcons();
+</script>
+</body>
+</html>
