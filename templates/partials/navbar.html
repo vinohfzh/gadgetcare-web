@@ -9,14 +9,14 @@
     <ul class="navbar__menu" id="navMenu">
       <li><a href="{% url 'home' %}" class="navbar__link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" id="nav-home">Beranda</a></li>
       <li><a href="{% url 'layanan' %}" class="navbar__link {% if request.resolver_match.url_name == 'layanan' %}active{% endif %}" id="nav-services">Layanan</a></li>
-      <li><a href="#steps" class="navbar__link" id="nav-tracking">Cek Status</a></li>
+      <li><a href="{% url 'cek_status' %}" class="navbar__link {% if request.resolver_match.url_name == 'cek_status' %}active{% endif %}" id="nav-tracking">Cek Status</a></li>
       <li class="navbar__menu-cta">
-        <a href="#cta" class="btn btn--primary">Ambil Antrean</a>
+        <a href="{% url 'login' %}" class="btn btn--primary">Ambil Antrean</a>
       </li>
     </ul>
 
     <div class="navbar__actions">
-      <a href="#cta" class="btn btn--primary btn--sm">Ambil Antrean</a>
+      <a href="{% url 'login' %}" class="btn btn--primary btn--sm">Ambil Antrean</a>
     </div>
 
     <button class="navbar__hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false">

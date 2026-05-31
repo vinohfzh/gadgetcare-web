@@ -24,7 +24,9 @@
 </head>
 <body>
 
-    {% include 'partials/navbar.html' %}
+    {% block navbar %}
+        {% include 'partials/navbar.html' %}
+    {% endblock %}
 
     <main>
         {% block content %}
