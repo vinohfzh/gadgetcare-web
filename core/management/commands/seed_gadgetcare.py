@@ -63,6 +63,7 @@ class Command(BaseCommand):
             # Diagnosa Tickets (Assigned to Rasya)
             {
                 'ticket_number': 'tkt-8902',
+                'customer_name': 'Siti Rahmawati',
                 'device_name': 'Macbook Pro M1 - Layar Berkedip',
                 'device_type': 'Laptop',
                 'complaint': 'Layar berkedip secara acak saat tingkat kecerahan di bawah 50%.',
@@ -73,6 +74,7 @@ class Command(BaseCommand):
             },
             {
                 'ticket_number': 'tkt-8903',
+                'customer_name': 'Bahlil',
                 'device_name': 'iPhone 13 Pro - Ganti LCD',
                 'device_type': 'Smartphone',
                 'complaint': 'Layar retak akibat terjatuh dan respon sentuhan tidak bekerja di area tengah.',
@@ -84,6 +86,7 @@ class Command(BaseCommand):
             # Proses Perbaikan Tickets (Assigned to Rasya)
             {
                 'ticket_number': 'tkt-8802',
+                'customer_name': 'Vino Ganteng',
                 'device_name': 'Macbook Pro M1 - Layar Berkedip',
                 'device_type': 'Laptop',
                 'complaint': 'Layar berkedip secara acak, sedang dilakukan perbaikan pada flex cable / konektor LCD.',
@@ -95,6 +98,7 @@ class Command(BaseCommand):
             # Menunggu Tickets (Unassigned / Claimable)
             {
                 'ticket_number': 'tkt-8701',
+                'customer_name': 'Rian Adiputra',
                 'device_name': 'Asus Rog Zephyrus',
                 'device_type': 'Laptop',
                 'complaint': 'Overheat saat main game berat, kipas/fan berisik dan bergetar kencang.',
@@ -105,6 +109,7 @@ class Command(BaseCommand):
             },
             {
                 'ticket_number': 'tkt-8702',
+                'customer_name': 'Dewi Lestari',
                 'device_name': 'iPad Air 5',
                 'device_type': 'Tablet',
                 'complaint': 'Baterai sangat boros dan perangkat cepat panas saat digunakan untuk menggambar.',
@@ -115,6 +120,7 @@ class Command(BaseCommand):
             },
             {
                 'ticket_number': 'tkt-8703',
+                'customer_name': 'Fajar Nugraha',
                 'device_name': 'Sony WH-1000XM4',
                 'device_type': 'Aksesoris',
                 'complaint': 'Active Noise Cancelling mati sebelah kiri dan suara berdengung setelah terkena cipratan air.',
@@ -125,6 +131,7 @@ class Command(BaseCommand):
             },
             {
                 'ticket_number': 'tkt-8704',
+                'customer_name': 'Ahmad Hidayat',
                 'device_name': 'Samsung Galaxy S23 Ultra',
                 'device_type': 'Smartphone',
                 'complaint': 'Kamera belakang buram/blur dan autofokus tidak berfungsi setelah terjatuh.',
@@ -136,6 +143,7 @@ class Command(BaseCommand):
             # Selesai Tickets
             {
                 'ticket_number': 'tkt-8885',
+                'customer_name': 'Anton Wijaya',
                 'device_name': 'iPad Air 5',
                 'device_type': 'Tablet',
                 'complaint': 'Ganti baterai karena battery health drop di bawah 70% dan sering mati mendadak.',

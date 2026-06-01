@@ -1,0 +1,523 @@
+/* static/css/profil-teknisi.css */
+/* Import base styles */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+
+/* ===== GLOBAL ===== */
+* {
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: "Plus Jakarta Sans", "Inter", Helvetica, sans-serif;
+}
+
+button:focus-visible {
+  outline: 2px solid #4a90e2 !important;
+}
+
+a { text-decoration: none; }
+
+/* ===== LAYOUT ===== */
+.profil-teknisi {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(0deg, #f9f9ff 0%, #f9f9ff 100%);
+}
+
+/* Sidebar */
+.profil-teknisi .frame {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  min-height: 100vh;
+  padding: 30px 20px 50px;
+  background: #fff;
+  border-right: 1px solid #f0f3ff;
+}
+
+.profil-teknisi .div { position: relative; width: 260px; }
+
+.profil-teknisi .untitled-x {
+  position: absolute;
+  top: 0; left: 0;
+  width: 164px; height: 65px;
+}
+
+.profil-teknisi .frame-2 {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  gap: 20px;
+  position: absolute;
+  top: 105px;
+  left: 0;
+}
+
+/* Navigation Items */
+.profil-teknisi .frame-3,
+.profil-teknisi .component,
+.profil-teknisi .component-2 {
+  display: flex;
+  height: 50px;
+  align-items: center;
+  gap: 10px;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.profil-teknisi .frame-3 {
+  background: var(--foundation-bluenormal, #0951c8);
+  border-radius: 15px;
+}
+
+.profil-teknisi .component {
+  background: #f2f7ff;
+  border-left: 2px solid var(--foundation-bluenormal, #0951c8);
+}
+
+.profil-teknisi .component:hover,
+.profil-teknisi .component-2:hover {
+  background: #e7eeff;
+}
+
+.profil-teknisi .frame-5 {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  padding-left: 15px;
+}
+
+.profil-teknisi .text-wrapper,
+.profil-teknisi .text-wrapper-2 {
+  font-size: 16px;
+  font-weight: 400;
+  color: #000000cc;
+  white-space: nowrap;
+}
+
+.profil-teknisi .text-wrapper { color: #fff; font-weight: 500; }
+
+/* Logout */
+.profil-teknisi .component-3 {
+  background: #ffe6e657;
+  border-radius: 10px;
+}
+
+.profil-teknisi .text-wrapper-4 {
+  color: var(--foundation-rednormal, #ff0000);
+  font-size: 16px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.profil-teknisi .main-content-canvas {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
+  background: #f9f9ff;
+}
+
+/* Top Bar */
+.profil-teknisi .frame-6 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px;
+  background: #fff;
+  border-bottom: 1px solid #f0f3ff;
+}
+
+.profil-teknisi .frame-7 {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 15px;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 15px;
+  width: 184px;
+  height: 40px;
+}
+
+.profil-teknisi .text-wrapper-5 {
+  color: #666;
+  font-size: 13px;
+}
+
+/* Tabs */
+.profil-teknisi .frame-8 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profil-teknisi .div-wrapper,
+.profil-teknisi .frame-10 {
+  display: inline-flex;
+  flex-direction: column;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.profil-teknisi .frame-10 {
+  border-bottom: 3px solid var(--foundation-bluenormal-active, #07419e);
+}
+
+.profil-teknisi .text-wrapper-6,
+.profil-teknisi .text-wrapper-7,
+.profil-teknisi .text-wrapper-8 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.profil-teknisi .text-wrapper-7 {
+  color: var(--foundation-bluenormal-active, #07419e);
+}
+
+/* Profile Section */
+.profil-teknisi .page-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  gap: 32px;
+  width: 100%;
+}
+
+.profil-teknisi .container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profil-teknisi .text-wrapper-11 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #121c2c;
+  line-height: 41.6px;
+}
+
+.profil-teknisi .p {
+  color: #434656;
+  font-size: 16px;
+  line-height: 25.6px;
+}
+
+/* Grid Layout */
+.profil-teknisi .container-3 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+.profil-teknisi .left-column-profile {
+  grid-column: 1 / 5;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profil-teknisi .right-column {
+  grid-column: 5 / 13;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Profile Card */
+.profil-teknisi .profile-header-card {
+  background: #fff;
+  border: 1px solid #f0f3ff;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  position: relative;
+}
+
+.profil-teknisi .text-wrapper-12 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #121c2c;
+}
+
+.profil-teknisi .text {
+  color: #434656;
+  font-size: 16px;
+}
+
+.profil-teknisi .background {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #e7eeff;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.profil-teknisi .background-2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #8ef5b5;
+  border-radius: 9999px;
+}
+
+.profil-teknisi .background-3 {
+  width: 8px;
+  height: 8px;
+  background: #006d40;
+  border-radius: 50%;
+}
+
+.profil-teknisi .text-3 {
+  color: #007243;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Specialization Badges */
+.profil-teknisi .specialization-card {
+  background: #fff;
+  border: 1px solid #f0f3ff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.profil-teknisi .text-4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #434656;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.profil-teknisi .container-5 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.profil-teknisi .overlay-border,
+.profil-teknisi .overlay-border-2,
+.profil-teknisi .background-border {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 14px;
+}
+
+.profil-teknisi .overlay-border,
+.profil-teknisi .overlay-border-2 {
+  background: rgba(0, 62, 200, 0.1);
+  border: 1px solid rgba(0, 62, 200, 0.2);
+  color: #003ec8;
+}
+
+.profil-teknisi .background-border {
+  background: #d9e3f9;
+  border: 1px solid #c3c5d9;
+  color: #434656;
+}
+
+/* Forms */
+.profil-teknisi .informasi-pribadi,
+.profil-teknisi .keamanan-sandi,
+.profil-teknisi .preferensi {
+  background: #fff;
+  border: 1px solid #f0f3ff;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.profil-teknisi .heading-3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.profil-teknisi .text-7 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #121c2c;
+}
+
+/* Form Grid */
+.profil-teknisi .form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.profil-teknisi .container-7,
+.profil-teknisi .container-9,
+.profil-teknisi .container-11,
+.profil-teknisi .container-12 {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profil-teknisi .text-wrapper-13 {
+  font-size: 14px;
+  color: #434656;
+}
+
+.profil-teknisi .input,
+.profil-teknisi .input-2,
+.profil-teknisi .input-3,
+.profil-teknisi .container-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: #f9f9ff;
+  border: 1px solid #c3c5d9;
+  border-radius: 8px;
+}
+
+.profil-teknisi .input input,
+.profil-teknisi .input-2 input,
+.profil-teknisi .input-3 input {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: #121c2c;
+  width: 100%;
+  outline: none;
+}
+
+.profil-teknisi .container-wrapper {
+  background: #f0f3ff;
+  border-color: rgba(195, 197, 217, 0.5);
+}
+
+.profil-teknisi .text-wrapper-15 {
+  color: #434656;
+  font-size: 16px;
+}
+
+/* Buttons */
+.profil-teknisi .button,
+.profil-teknisi .button-2 {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.profil-teknisi .button {
+  background: #003ec8;
+  color: #fff;
+}
+
+.profil-teknisi .button:hover {
+  background: #07419e;
+}
+
+.profil-teknisi .button-2 {
+  background: transparent;
+  color: #003ec8;
+  border: 1px solid #003ec8;
+}
+
+.profil-teknisi .button-2:hover {
+  background: rgba(0, 62, 200, 0.1);
+}
+
+/* Preferences Toggles */
+.profil-teknisi .label {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid #f0f3ff;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.profil-teknisi .text-10 {
+  font-size: 16px;
+  color: #121c2c;
+}
+
+.profil-teknisi .label p {
+  font-size: 14px;
+  color: #434656;
+  margin: 4px 0 0 0;
+}
+
+/* Toggle Switch */
+.profil-teknisi .toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.profil-teknisi .toggle-switch .background-4 {
+  width: 44px;
+  height: 24px;
+  background: #d9e3f9;
+  border-radius: 9999px;
+  transition: background 0.3s;
+}
+
+.profil-teknisi .toggle-switch.active .background-4 {
+  background: #003ec8;
+}
+
+.profil-teknisi .toggle-switch .background-border-2,
+.profil-teknisi .toggle-switch .background-border-3 {
+  position: absolute;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  transition: left 0.3s, border-color 0.3s;
+}
+
+.profil-teknisi .toggle-switch.active .background-border-2 {
+  left: 22px;
+  border-color: #003ec8;
+}
+
+.profil-teknisi .toggle-switch:not(.active) .background-border-3 {
+  left: 2px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .profil-teknisi .frame { width: 240px; }
+  .profil-teknisi .container-3 { grid-template-columns: 1fr; }
+  .profil-teknisi .left-column-profile,
+  .profil-teknisi .right-column { grid-column: 1; }
+  .profil-teknisi .form { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .profil-teknisi { flex-direction: column; }
+  .profil-teknisi .frame { width: 100%; height: auto; border-right: none; border-bottom: 1px solid #f0f3ff; }
+  .profil-teknisi .frame-6 { flex-wrap: wrap; gap: 12px; }
+  .profil-teknisi .frame-8 { width: 100%; justify-content: center; }
+}

@@ -2,6 +2,12 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+import datetime
+
+# Compatibility patch for Django on Python 3.10 (which lacks datetime.UTC)
+if not hasattr(datetime, 'UTC'):
+    datetime.UTC = datetime.timezone.utc
+
 
 
 def main():

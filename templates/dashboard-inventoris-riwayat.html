@@ -1,0 +1,249 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" data-colors-mode="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Riwayat Mutasi Inventoris - GadgetCare">
+    <link rel="stylesheet" href="{% static 'css/dashboard-teknisi.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Riwayat Mutasi Stok | GadgetCare</title>
+</head>
+<body>
+    <div class="dashboard">
+        
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar__brand">
+                <img class="sidebar__logo" src="{% static 'img/logo-gadgetcare.svg' %}" alt="GadgetCare Logo" />
+                <span class="sidebar__brand-name text--heading text--bold">GadgetCare</span>
+            </div>
+            
+            <nav class="sidebar__nav" aria-label="Main Navigation">
+                <a href="{% url 'dashboard_teknisi' %}" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Dashboard</span>
+                    {% if available_tickets %}
+                        <span class="nav-item__badge">{{ available_tickets|length }}</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'daftar_perbaikan' %}" class="nav-item">
+                    <i data-lucide="wrench" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Perbaikan</span>
+                </a>
+                
+                <a href="{% url 'dashboard_inventoris' %}" class="nav-item nav-item--active" aria-current="page">
+                    <i data-lucide="package" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Inventaris</span>
+                </a>
+                
+                <a href="#" class="nav-item">
+                    <i data-lucide="bar-chart-3" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Laporan</span>
+                </a>
+                
+                <a href="{% url 'dashboard_pengaturan' %}" class="nav-item">
+                    <i data-lucide="settings" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar__footer">
+                <a href="#" class="nav-item">
+                    <i data-lucide="help-circle" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Bantuan</span>
+                </a>
+                
+                <a href="{% url 'logout' %}" class="nav-item nav-item--danger">
+                    <i data-lucide="log-out" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Keluar</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            
+            <!-- Header -->
+            <header class="header">
+                <form class="header__search" role="search" method="GET" action="{% url 'riwayat_inventoris' %}">
+                    <i data-lucide="search" class="nav-item__icon" stroke-width="1.5" aria-hidden="true"></i>
+                    <input type="search" name="q" placeholder="Cari barang, SKU, keterangan..." aria-label="Cari" value="{{ q|default:'' }}">
+                    {% if selected_activity %}<input type="hidden" name="activity_type" value="{{ selected_activity }}">{% endif %}
+                </form>
+                
+                <div class="header__actions">
+                    <button class="header__notification" aria-label="Notifikasi" type="button">
+                        <i data-lucide="bell" stroke-width="1.5" aria-hidden="true"></i>
+                        <span class="header__notification-badge" hidden></span>
+                    </button>
+                    
+                    <div class="header__user" tabindex="0" role="button" aria-label="Profil pengguna">
+                        <img class="header__avatar" 
+                             src="https://ui-avatars.com/api/?name={{ user.first_name|default:'U' }}+{{ user.last_name|default:'ser' }}&background=0D8ABC&color=fff&rounded=true" 
+                             alt="Avatar {{ user.first_name }}">
+                        <div class="header__user-info">
+                            <span class="header__user-name text--semibold">{{ user.first_name }} {{ user.last_name }}</span>
+                            <span class="header__user-role text--xs text--secondary">Teknisi</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Title block -->
+            <section class="greeting animate-fade-in" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+                <div>
+                    <h1 class="greeting__title text--heading">Riwayat Mutasi Stok</h1>
+                    <p class="greeting__subtitle text--secondary">Jejak audit keluar masuk stok barang sukucadang GadgetCare.</p>
+                </div>
+                <div>
+                    <a href="{% url 'dashboard_inventoris' %}" class="btn btn--secondary" style="display:flex; align-items:center; gap:8px;">
+                        <i data-lucide="arrow-left" size="16"></i>
+                        <span>Kembali ke Gudang</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Actions Bar: Filters & Search results status -->
+            <section class="inventory-actions-bar">
+                <form method="GET" class="inventory-filters" id="historyFilterForm">
+                    <!-- Preserve search parameter -->
+                    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+
+                    <!-- Activity Type Filter -->
+                    <select name="activity_type" class="inventory-select" onchange="document.getElementById('historyFilterForm').submit();">
+                        <option value="">Semua Aktivitas</option>
+                        {% for value, label in activity_choices %}
+                            <option value="{{ value }}" {% if selected_activity == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    {% if selected_activity or q %}
+                        <a href="{% url 'riwayat_inventoris' %}" class="btn btn--secondary btn--sm" style="display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="x" size="14"></i>
+                            <span>Reset Filter</span>
+                        </a>
+                    {% endif %}
+                </form>
+                
+                {% if q or selected_activity %}
+                    <span class="text--sm text--secondary">
+                        Menemukan <strong>{{ usages.paginator.count }}</strong> log aktivitas cocok.
+                    </span>
+                {% endif %}
+            </section>
+
+            <!-- Stock Movements Table -->
+            <section class="tickets-section">
+                <div class="tickets-table">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Tanggal & Waktu</th>
+                                <th style="width: 25%;">Barang Sukucadang</th>
+                                <th style="width: 15%;">Jenis Mutasi</th>
+                                <th style="width: 10%; text-align:center;">Jumlah</th>
+                                <th style="width: 30%;">Keterangan & Catatan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in usages %}
+                            <tr>
+                                <td>
+                                    <strong class="text--sm">{{ log.created_at|date:"d M Y, H:i" }}</strong><br>
+                                    <span class="text--xs text--secondary">{{ log.created_at|timesince }} yang lalu</span>
+                                </td>
+                                <td>
+                                    <strong class="text--sm">{{ log.spare_part.name }}</strong><br>
+                                    <span class="text--xs text--semibold text--secondary">{{ log.spare_part.sku }}</span>
+                                </td>
+                                <td>
+                                    {% if log.activity_type == 'tambah' %}
+                                        <span class="activity-badge activity-badge--tambah">
+                                            <i data-lucide="plus-circle" size="12"></i>
+                                            <span>Restok / Masuk</span>
+                                        </span>
+                                    {% elif log.activity_type == 'pakai' %}
+                                        <span class="activity-badge activity-badge--pakai">
+                                            <i data-lucide="minus-circle" size="12"></i>
+                                            <span>Dipakai / Keluar</span>
+                                        </span>
+                                    {% else %}
+                                        <span class="activity-badge activity-badge--penyesuaian">
+                                            <i data-lucide="sliders" size="12"></i>
+                                            <span>Penyesuaian</span>
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align:center; font-weight:700; font-family:var(--font-heading);">
+                                    {% if log.quantity > 0 %}
+                                        <span style="color:var(--foundation-greendark);">+{{ log.quantity }}</span>
+                                    {% else %}
+                                        <span style="color:var(--foundation-rednormal);">{{ log.quantity }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="text--sm">{{ log.notes|default:"-" }}</span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text--center text--secondary py-6">
+                                    Belum ada log riwayat mutasi stok. 🛠️
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Custom Paginator -->
+                {% if usages.has_other_pages %}
+                <div class="custom-pagination">
+                    <span class="pagination-summary text--sm text--secondary">
+                        Menampilkan {{ usages.start_index }}-{{ usages.end_index }} dari {{ usages.paginator.count }} log aktivitas
+                    </span>
+                    <div class="pagination-controls">
+                        {% if usages.has_previous %}
+                            <a href="?page={{ usages.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_activity %}&activity_type={{ selected_activity }}{% endif %}" class="pagination-btn">
+                                <i data-lucide="chevron-left" size="16"></i>
+                            </a>
+                        {% else %}
+                            <span class="pagination-btn pagination-btn--disabled">
+                                <i data-lucide="chevron-left" size="16"></i>
+                            </span>
+                        {% endif %}
+
+                        {% for num in usages.paginator.page_range %}
+                            {% if usages.number == num %}
+                                <span class="pagination-btn pagination-btn--active">{{ num }}</span>
+                            {% else %}
+                                <a href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if selected_activity %}&activity_type={{ selected_activity }}{% endif %}" class="pagination-btn">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if usages.has_next %}
+                            <a href="?page={{ usages.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_activity %}&activity_type={{ selected_activity }}{% endif %}" class="pagination-btn">
+                                <i data-lucide="chevron-right" size="16"></i>
+                            </a>
+                        {% else %}
+                            <span class="pagination-btn pagination-btn--disabled">
+                                <i data-lucide="chevron-right" size="16"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    <!-- JS Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,579 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - GadgetCare</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/globals.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styleguide.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Chart.js untuk grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .stat-card:hover { transform: translateY(-2px); transition: transform 0.2s; }
+        .queue-item:hover { background-color: #f9f9ff; }
+        .row:hover { background-color: #f8fafc; }
+        .button-5 { opacity: 1 !important; }
+        /* Hide scrollbar but allow scroll */
+        .container-22::-webkit-scrollbar { width: 0; display: none; }
+        .table::-webkit-scrollbar { width: 0; display: none; }
+    </style>
+</head>
+<body>
+<div class="html-body">
+    <div class="frame">
+        <div class="div">
+            <!-- Logo -->
+            <img class="untitled-x" src="{% static 'img/logo-gadgetcare.svg' %}" alt="GadgetCare" />
+            
+            <!-- Sidebar Menu -->
+            <div class="frame-2">
+                <!-- Tombol Perbaikan Baru -->
+                <div class="frame-3">
+                    <div class="div-2">
+                        <img class="vector" src="{% static 'img/plus-icon.svg' %}" />
+                    </div>
+                    <div class="text-wrapper">Perbaikan Baru</div>
+                </div>
+                
+                <!-- Navigation -->
+                <div class="frame-4">
+                    <!-- Dashboard (Active) -->
+                    <div class="component">
+                        <div class="frame-5">
+                            <img class="mage-dashboard" src="{% static 'img/dashboard-active.svg' %}" />
+                            <div class="text-wrapper-2">Dashboard</div>
+                        </div>
+                        <div class="add-wrapper">
+                            <div class="div-2">
+                                <img class="img" src="{% static 'img/badge-bg.svg' %}" />
+                                <div class="text-wrapper-3">{{ stats.total_tiket|default:"0" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Menu Items -->
+                    <a href="{% url 'dashboard:tickets_list' %}" class="component-2" style="text-decoration:none; display:flex;">
+                        <div class="frame-5">
+                            <div class="div-2">
+                                <img class="vector-2" src="{% static 'img/wrench-icon.svg' %}" />
+                            </div>
+                            <div class="text-wrapper-2">Perbaikan</div>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="component-2" style="text-decoration:none; display:flex; opacity:0.6; pointer-events:none;">
+                        <div class="frame-5">
+                            <div class="div-2">
+                                <img class="vector-3" src="{% static 'img/package-icon.svg' %}" />
+                            </div>
+                            <div class="text-wrapper-2">Inventaris</div>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="component-2" style="text-decoration:none; display:flex; opacity:0.6; pointer-events:none;">
+                        <div class="frame-5">
+                            <div class="div-2">
+                                <img class="vector-4" src="{% static 'img/chart-icon.svg' %}" />
+                            </div>
+                            <div class="text-wrapper-2">Laporan</div>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="component-2" style="text-decoration:none; display:flex; opacity:0.6; pointer-events:none;">
+                        <div class="frame-5">
+                            <div class="div-2">
+                                <img class="vector-5" src="{% static 'img/settings-icon.svg' %}" />
+                            </div>
+                            <div class="text-wrapper-2">Pengaturan</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Sidebar: Help & Logout -->
+        <div class="frame-4">
+            <div class="component-2">
+                <div class="frame-5">
+                    <div class="div-2">
+                        <img class="vector-3" src="{% static 'img/help-icon.svg' %}" />
+                    </div>
+                    <div class="text-wrapper-2">Bantuan</div>
+                </div>
+            </div>
+            <div class="component-3">
+                <div class="frame-5">
+                    <div class="vector-wrapper">
+                        <img class="vector-6" src="{% static 'img/logout-icon.svg' %}" />
+                    </div>
+                    <a href="{% url 'logout' %}" class="text-wrapper-4" style="text-decoration:none;">Keluar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-canvas">
+        <!-- Top Bar: Search, Notif, Profile -->
+        <div class="frame-6">
+            <div class="frame-7">
+                <div class="pajamas-search">
+                    <img class="vector-7" src="{% static 'img/search-icon.svg' %}" />
+                </div>
+                <div class="text-wrapper-5">Telusuri...</div>
+            </div>
+            <div class="frame-8">
+                <div class="lucide-bell-ring">
+                    <img class="vector-8" src="{% static 'img/bell-icon.svg' %}" />
+                </div>
+                <div class="frame-9">
+                    <div class="frame-10">
+                        <div class="text-wrapper-6">{{ current_user.get_display_name }}</div>
+                        <div class="text-wrapper-7">Administrator</div>
+                    </div>
+                    <img class="mask-group" src="https://ui-avatars.com/api/?name={{ current_user.get_display_name }}&background=0D8ABC&color=fff&rounded=true" alt="Profile" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Page Header -->
+        <div class="container">
+            <div class="page-header">
+                <div class="container-2">
+                    <div class="heading">
+                        <div class="text">Ringkasan Sistem</div>
+                    </div>
+                    <div class="div-wrapper">
+                        <p class="text-2">Metrik waktu nyata dan pemantauan layanan.</p>
+                    </div>
+                </div>
+                <div class="container-3">
+                    <button class="button" onclick="alert('Fitur filter tanggal akan segera hadir!')">
+                        <div class="icon-wrapper">
+                            <img class="icon" src="{% static 'img/calendar-icon.svg' %}" />
+                        </div>
+                        <div class="text-3">30 Hari Terakhir</div>
+                    </button>
+                    <button class="button-2" onclick="alert('Fitur ekspor akan segera hadir!')">
+                        <div class="icon-wrapper">
+                            <img class="icon-2" src="{% static 'img/export-icon.svg' %}" />
+                        </div>
+                        <div class="text-4">Ekspor</div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Stats Cards Grid -->
+            <div class="stats-grid-bento">
+                <!-- Total Tiket -->
+                <div class="stat-card">
+                    <div class="margin">
+                        <div class="container-4">
+                            <div class="overlay">
+                                <img class="icon-3" src="{% static 'img/ticket-icon.svg' %}" />
+                            </div>
+                            <div class="background">
+                                <div class="container-5">
+                                    <img class="icon-4" src="{% static 'img/arrow-up.svg' %}" />
+                                </div>
+                                <div class="text-5">+{{ stats.growth_tiket }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-6">
+                        <div class="container-7">
+                            <div class="text-wrapper-8">Total Tiket</div>
+                        </div>
+                        <div class="container-7">
+                            <div class="text-wrapper-9">{{ stats.total_tiket|default:"0"|intcomma }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Total Pelanggan -->
+                <div class="stat-card-2">
+                    <div class="margin">
+                        <div class="container-8">
+                            <div class="overlay">
+                                <img class="icon-5" src="{% static 'img/customer-icon.svg' %}" />
+                            </div>
+                            <div class="background">
+                                <div class="container-5">
+                                    <img class="icon-4" src="{% static 'img/arrow-up.svg' %}" />
+                                </div>
+                                <div class="text-5">+{{ stats.growth_pelanggan }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-6">
+                        <div class="container-7">
+                            <div class="text-wrapper-8">Total Pelanggan</div>
+                        </div>
+                        <div class="container-7">
+                            <div class="text-wrapper-9">{{ stats.total_pelanggan|default:"0"|intcomma }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Teknisi Aktif -->
+                <div class="stat-card-3">
+                    <div class="margin">
+                        <div class="container-9">
+                            <div class="img-wrapper">
+                                <img class="icon-6" src="{% static 'img/technician-icon.svg' %}" />
+                            </div>
+                            <div class="background-2">
+                                <div class="container-5">
+                                    <img class="icon-7" src="{% static 'img/minus-icon.svg' %}" />
+                                </div>
+                                <div class="text-6">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-6">
+                        <div class="container-7">
+                            <div class="text-wrapper-8">Teknisi Aktif</div>
+                        </div>
+                        <div class="container-7">
+                            <div class="text-wrapper-9">{{ stats.teknisi_aktif|default:"0" }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pendapatan -->
+                <div class="stat-card-4">
+                    <div class="margin">
+                        <div class="container-9">
+                            <div class="overlay">
+                                <img class="icon-5" src="{% static 'img/revenue-icon.svg' %}" />
+                            </div>
+                            <div class="background">
+                                <div class="container-5">
+                                    <img class="icon-4" src="{% static 'img/arrow-up.svg' %}" />
+                                </div>
+                                <div class="text-5">+{{ stats.growth_pendapatan }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-10">
+                        <div class="container-7">
+                            <div class="text-wrapper-8">Pendapatan (Bln Ini)</div>
+                        </div>
+                        <div class="container-11">
+                            <div class="text-wrapper-10">Rp {{ stats.pendapatan_bulan|default:"0"|intcomma }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chart + Queue Section -->
+            <div class="chart-queue-section">
+                <!-- Volume Layanan Chart -->
+                <div class="chart-area">
+                    <div class="container-wrapper">
+                        <div class="container-12">
+                            <div class="heading-2">
+                                <div class="text-7">Volume Layanan</div>
+                            </div>
+                            <div class="button-3">
+                                <div class="container-13">
+                                    <img class="icon-8" src="{% static 'img/more-icon.svg' %}" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Canvas untuk Chart.js -->
+                    <div class="mock-chart">
+                        <canvas id="volumeChart" width="400" height="250"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Real-Time Queue -->
+                <div class="real-time-queue">
+                    <div class="container-wrapper">
+                        <div class="container-12">
+                            <div class="heading-3">
+                                <div class="text-7">Antrean Langsung</div>
+                            </div>
+                            <div class="container-21">
+                                <div class="background-8"></div>
+                                <div class="background-9"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-22">
+                        {% for item in queue_items %}
+                        <div class="queue-item">
+                            <div class="{% if item.priority == 'high' %}background-10{% else %}background-11{% endif %}">
+                                <div class="{% if item.priority == 'high' %}text-11{% else %}text-13{% endif %}">
+                                    {% if item.priority == 'high' %}P1{% else %}{{ forloop.counter|stringformat:"02d" }}{% endif %}
+                                </div>
+                            </div>
+                            <div class="{% if item.priority == 'high' %}container-23{% else %}container-25{% endif %}">
+                                <div class="container-7">
+                                    <div class="text-wrapper-11">{{ item.ticket_number }} {% if item.priority == 'high' %}(Mendesak){% endif %}</div>
+                                </div>
+                                <div class="container-7">
+                                    <div class="text-wrapper-12">{{ item.device_name }} - {{ item.complaint|truncatechars:25 }}</div>
+                                </div>
+                            </div>
+                            <div class="text-12">{{ item.time_since_update }}</div>
+                        </div>
+                        {% empty %}
+                        <div class="queue-item">
+                            <div class="text-wrapper-12" style="text-align:center; width:100%;">Tidak ada antrean</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="button-margin">
+                        <button class="button-4" onclick="window.location.href='{% url "dashboard:tickets_list" %}'">
+                            <div class="text-14">Lihat Semua Antrean</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Tickets Table -->
+            <div class="recent-tickets-table">
+                <div class="horizontal-border">
+                    <div class="heading-4">
+                        <div class="text-7">Tiket Terbaru</div>
+                    </div>
+                    <div class="container-27">
+                        <div class="container-28">
+                            <div class="options">
+                                <div class="image-clip">
+                                    <div class="image">
+                                        <img class="vector-9" src="{% static 'img/filter-icon.svg' %}" />
+                                    </div>
+                                </div>
+                                <div class="container-29">
+                                    <div class="text-15">Semua Status</div>
+                                </div>
+                            </div>
+                            <div class="container-30">
+                                <img class="icon-9" src="{% static 'img/dropdown-icon.svg' %}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table">
+                    <!-- Header Row -->
+                    <div class="header-row">
+                        <div class="cell"><div class="text-16">ID Tiket</div></div>
+                        <div class="cell-2"><div class="text-16">Pelanggan</div></div>
+                        <div class="cell-3"><div class="text-16">Perangkat</div></div>
+                        <div class="cell-4"><div class="text-16">Teknisi</div></div>
+                        <div class="cell-5"><div class="text-16">Status</div></div>
+                        <div class="cell-6"><div class="text-17">Aksi</div></div>
+                    </div>
+                    
+                    <!-- Body Rows -->
+                    <div class="body">
+                        {% for ticket in recent_tickets %}
+                        <div class="{% if forloop.first %}row{% else %}row-2{% endif %}">
+                            <div class="data">
+                                <div class="text-18">#{{ ticket.ticket_number }}</div>
+                            </div>
+                            <div class="data-2">
+                                <div class="background-13">
+                                    <div class="text-19">{{ ticket.customer.get_initials }}</div>
+                                </div>
+                                <div class="container-5">
+                                    <div class="text-20">{{ ticket.customer.get_display_name }}</div>
+                                </div>
+                            </div>
+                            <div class="data-3">
+                                <div class="text-2">{{ ticket.device_name }} {{ ticket.get_device_type_display }}</div>
+                            </div>
+                            <div class="data-4">
+                                <div class="text-2">{{ ticket.assigned_technician.get_display_name|default:"Belum Ditugaskan" }}</div>
+                            </div>
+                            <div class="background-wrapper">
+                                {% with badge=ticket.get_status_display_badge %}
+                                <div class="{{ badge.class }}">
+                                    <div class="{{ badge.color_class }}">
+                                        {{ badge.text }}
+                                    </div>
+                                </div>
+                                {% endwith %}
+                            </div>
+                            <div class="button-wrapper">
+                                <div class="button-5">
+                                    <div class="container-13">
+                                        <a href="{% url 'dashboard:ticket_detail' ticket.id %}" style="display:block;">
+                                            <img class="icon-10" src="{% static ticket.get_action_icon %}" />
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="row">
+                            <div class="data" style="text-align:center; width:100%; padding:20px;">
+                                <div class="text-2">Belum ada tiket</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination">
+                    <div class="container-5">
+                        <p class="p">Menampilkan {{ recent_tickets.start_index|default:"1" }} hingga {{ recent_tickets.end_index|default:recent_tickets|length }} dari {{ recent_tickets.paginator.count|default:recent_tickets|length }} entri</p>
+                    </div>
+                    <div class="container-31">
+                        {% if recent_tickets.has_previous %}
+                        <a href="?page=1" class="button-6">
+                            <div class="container-13">
+                                <img class="icon-11" src="{% static 'img/chevron-left.svg' %}" />
+                            </div>
+                        </a>
+                        {% else %}
+                        <div class="button-6" style="opacity:0.3; pointer-events:none;">
+                            <div class="container-13">
+                                <img class="icon-11" src="{% static 'img/chevron-left.svg' %}" />
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if recent_tickets.elided_range %}
+                            {% for num in recent_tickets.elided_range %}
+                                {% if num == recent_tickets.number %}
+                                <button class="button-7"><div class="text-25">{{ num }}</div></button>
+                                {% elif num == '…' %}
+                                <div class="container-32"><div class="text-27">...</div></div>
+                                {% else %}
+                                <a href="?page={{ num }}" class="button-8"><div class="text-26">{{ num }}</div></a>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {% for num in recent_tickets.paginator.page_range %}
+                                {% if num == recent_tickets.number %}
+                                <button class="button-7"><div class="text-25">{{ num }}</div></button>
+                                {% else %}
+                                <a href="?page={{ num }}" class="button-8"><div class="text-26">{{ num }}</div></a>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if recent_tickets.has_next %}
+                        <a href="?page={{ recent_tickets.paginator.num_pages }}" class="button-9">
+                            <div class="container-13">
+                                <img class="icon-11" src="{% static 'img/chevron-right.svg' %}" />
+                            </div>
+                        </a>
+                        {% else %}
+                        <div class="button-9" style="opacity:0.3; pointer-events:none;">
+                            <div class="container-13">
+                                <img class="icon-11" src="{% static 'img/chevron-right.svg' %}" />
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('volumeChart');
+    if (!ctx) return;
+    
+    if (!labels || !data || labels.length === 0) {
+        // Fallback data jika tidak ada
+        console.warn('Chart data not found, using fallback');
+        return;
+    }
+    
+    new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Tiket',
+                data: data,
+                backgroundColor: data.map((_, i) => 
+                    i === data.length - 1 ? 'rgba(0, 62, 200, 1)' : 'rgba(13, 83, 252, 0.8)'
+                ),
+                borderColor: data.map((_, i) => 
+                    i === data.length - 1 ? 'rgba(0, 62, 200, 1)' : 'rgba(13, 83, 252, 1)'
+                ),
+                borderWidth: 1,
+                borderRadius: 4,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y + ' tiket';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(195, 197, 217, 0.3)',
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        font: { family: 'Plus Jakarta Sans, sans-serif', size: 12 },
+                        color: '#737688',
+                        stepSize: 50,
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        font: { family: 'Plus Jakarta Sans, sans-serif', size: 12 },
+                        color: '#737688',
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+<!-- Auto-refresh queue setiap 30 detik (opsional) -->
+<script>
+// Optional: Auto-refresh queue via AJAX
+/*
+setInterval(function() {
+    fetch("{% url 'dashboard:api_queue' %}")
+        .then(response => response.json())
+        .then(data => {
+            // Update queue items here if needed
+            console.log('Queue updated:', data);
+        })
+        .catch(err => console.error('Queue refresh error:', err));
+}, 30000);
+*/
+</script>
+</body>
+</html>

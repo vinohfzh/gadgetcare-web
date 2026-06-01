@@ -1,0 +1,640 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" data-colors-mode="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Dashboard Inventoris - GadgetCare">
+    <link rel="stylesheet" href="{% static 'css/dashboard-teknisi.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Inventaris Sukucadang | GadgetCare</title>
+</head>
+<body>
+    <div class="dashboard">
+        
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar__brand">
+                <img class="sidebar__logo" src="{% static 'img/logo-gadgetcare.svg' %}" alt="GadgetCare Logo" />
+                <span class="sidebar__brand-name text--heading text--bold">GadgetCare</span>
+            </div>
+            
+            <nav class="sidebar__nav" aria-label="Main Navigation">
+                <a href="{% url 'dashboard_teknisi' %}" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Dashboard</span>
+                    {% if available_tickets %}
+                        <span class="nav-item__badge">{{ available_tickets|length }}</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'daftar_perbaikan' %}" class="nav-item">
+                    <i data-lucide="wrench" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Perbaikan</span>
+                </a>
+                
+                <a href="{% url 'dashboard_inventoris' %}" class="nav-item nav-item--active" aria-current="page">
+                    <i data-lucide="package" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Inventaris</span>
+                </a>
+                
+                <a href="#" class="nav-item">
+                    <i data-lucide="bar-chart-3" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Laporan</span>
+                </a>
+                
+                <a href="{% url 'dashboard_pengaturan' %}" class="nav-item">
+                    <i data-lucide="settings" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar__footer">
+                <a href="#" class="nav-item">
+                    <i data-lucide="help-circle" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Bantuan</span>
+                </a>
+                
+                <a href="{% url 'logout' %}" class="nav-item nav-item--danger">
+                    <i data-lucide="log-out" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Keluar</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            
+            <!-- Header -->
+            <header class="header">
+                <form class="header__search" role="search" method="GET" action="{% url 'dashboard_inventoris' %}">
+                    <i data-lucide="search" class="nav-item__icon" stroke-width="1.5" aria-hidden="true"></i>
+                    <input type="search" name="q" placeholder="Telusuri SKU, nama barang, rak..." aria-label="Cari" value="{{ q|default:'' }}">
+                    
+                    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                    {% if selected_device %}<input type="hidden" name="device_type" value="{{ selected_device }}">{% endif %}
+                    {% if selected_stock_status %}<input type="hidden" name="stock_status" value="{{ selected_stock_status }}">{% endif %}
+                </form>
+                
+                <div class="header__actions">
+                    <button class="header__notification" aria-label="Notifikasi" type="button">
+                        <i data-lucide="bell" stroke-width="1.5" aria-hidden="true"></i>
+                        <span class="header__notification-badge" hidden></span>
+                    </button>
+                    
+                    <div class="header__user" tabindex="0" role="button" aria-label="Profil pengguna">
+                        <img class="header__avatar" 
+                             src="https://ui-avatars.com/api/?name={{ user.first_name|default:'U' }}+{{ user.last_name|default:'ser' }}&background=0D8ABC&color=fff&rounded=true" 
+                             alt="Avatar {{ user.first_name }}">
+                        <div class="header__user-info">
+                            <span class="header__user-name text--semibold">{{ user.first_name }} {{ user.last_name }}</span>
+                            <span class="header__user-role text--xs text--secondary">Teknisi</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Django Alert Messages -->
+            {% if messages %}
+                <div class="alerts-container">
+                    {% for message in messages %}
+                        <div class="alert alert--{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} animate-fade-in">
+                            <div class="alert__icon">
+                                {% if message.tags == 'error' or message.tags == 'danger' %}
+                                    <i data-lucide="alert-circle" stroke-width="2" size="18"></i>
+                                {% elif message.tags == 'success' %}
+                                    <i data-lucide="check-circle" stroke-width="2" size="18"></i>
+                                {% else %}
+                                    <i data-lucide="info" stroke-width="2" size="18"></i>
+                                {% endif %}
+                            </div>
+                            <div class="alert__message">{{ message }}</div>
+                            <button class="alert__close" onclick="this.parentElement.remove()" aria-label="Tutup alert">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Title block -->
+            <section class="greeting animate-fade-in" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+                <div>
+                    <h1 class="greeting__title text--heading">Gudang Sukucadang</h1>
+                    <p class="greeting__subtitle text--secondary">Kelola ketersediaan inventoris sukucadang GadgetCare.</p>
+                </div>
+                <div class="inventory-header-actions">
+                    <a href="{% url 'riwayat_inventoris' %}" class="btn btn--secondary">
+                        <i data-lucide="history" size="16"></i>
+                        <span>Riwayat Mutasi</span>
+                    </a>
+                    <button class="btn btn--primary" id="openAddModalBtn">
+                        <i data-lucide="plus" size="16"></i>
+                        <span>Tambah Sukucadang</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Stats Grid (Bento Style Grid) -->
+            <section class="stats-grid">
+                <!-- Total Jenis Barang -->
+                <article class="stat-card">
+                    <div class="stat-card__icon stat-card__icon--blue">
+                        <i data-lucide="box" stroke-width="1.5" aria-hidden="true"></i>
+                    </div>
+                    <div class="stat-card__content">
+                        <span class="stat-card__label text--semibold">JENIS SUKUCADANG</span>
+                        <span class="stat-card__value">{{ total_items }}</span>
+                        <span class="stat-card__trend text--xs text--secondary">Total SKU terdaftar</span>
+                    </div>
+                </article>
+
+                <!-- Total Ketersediaan Unit -->
+                <article class="stat-card">
+                    <div class="stat-card__icon stat-card__icon--green">
+                        <i data-lucide="database" stroke-width="1.5" aria-hidden="true"></i>
+                    </div>
+                    <div class="stat-card__content">
+                        <span class="stat-card__label text--semibold">TOTAL STOCK UNIT</span>
+                        <span class="stat-card__value">{{ total_stock }}</span>
+                        <span class="stat-card__trend text--xs text--secondary">Total fisik barang ganti</span>
+                    </div>
+                </article>
+
+                <!-- Low Stock & Out of Stock -->
+                <article class="stat-card">
+                    <div class="stat-card__icon stat-card__icon--yellow">
+                        <i data-lucide="alert-triangle" stroke-width="1.5" aria-hidden="true"></i>
+                    </div>
+                    <div class="stat-card__content">
+                        <span class="stat-card__label text--semibold">STOK Kritis / HABIS</span>
+                        <span class="stat-card__value">
+                            <span style="color:var(--foundation-yellowdark);">{{ low_stock_count }}</span>
+                            <span style="color:var(--text-muted); font-size: 20px;">/</span>
+                            <span style="color:var(--foundation-rednormal);">{{ out_of_stock_count }}</span>
+                        </span>
+                        <span class="stat-card__trend text--xs text--secondary">Menipis / Kosong</span>
+                    </div>
+                </article>
+
+                <!-- Inventory value estimation -->
+                <article class="stat-card" style="grid-column: span 3; max-width: 100%;">
+                    <div class="stat-card__icon stat-card__icon--blue" style="background-color: var(--foundationbluelight); color: var(--foundation-bluenormal);">
+                        <i data-lucide="trending-up" stroke-width="1.5" aria-hidden="true"></i>
+                    </div>
+                    <div class="stat-card__content">
+                        <span class="stat-card__label text--semibold">ESTIMASI NILAI ASET INVENTARIS</span>
+                        <span class="stat-card__value price-tag">{{ inventory_value }}</span>
+                        <span class="stat-card__trend text--xs text--secondary">Akumulasi total nilai beli stok barang aktif</span>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Actions Bar: Filters & Search results status -->
+            <section class="inventory-actions-bar">
+                <form method="GET" class="inventory-filters" id="filterForm">
+                    <!-- Preserve search parameter -->
+                    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+
+                    <!-- Category Filter -->
+                    <select name="category" class="inventory-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">Semua Kategori</option>
+                        {% for value, label in category_choices %}
+                            <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Device Type Filter -->
+                    <select name="device_type" class="inventory-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">Semua Perangkat</option>
+                        {% for value, label in device_choices %}
+                            <option value="{{ value }}" {% if selected_device == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Stock Status Filter -->
+                    <select name="stock_status" class="inventory-select" onchange="document.getElementById('filterForm').submit();">
+                        <option value="">Semua Status Stok</option>
+                        <option value="ok" {% if selected_stock_status == 'ok' %}selected{% endif %}>Aman</option>
+                        <option value="low" {% if selected_stock_status == 'low' %}selected{% endif %}>Menipis (Kritis)</option>
+                        <option value="out" {% if selected_stock_status == 'out' %}selected{% endif %}>Habis (Kosong)</option>
+                    </select>
+
+                    {% if selected_category or selected_device or selected_stock_status or q %}
+                        <a href="{% url 'dashboard_inventoris' %}" class="btn btn--secondary btn--sm" style="display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="x" size="14"></i>
+                            <span>Reset Filter</span>
+                        </a>
+                    {% endif %}
+                </form>
+                
+                {% if q or selected_category or selected_device or selected_stock_status %}
+                    <span class="text--sm text--secondary">
+                        Menemukan <strong>{{ parts.paginator.count }}</strong> barang cocok.
+                    </span>
+                {% endif %}
+            </section>
+
+            <!-- Inventory Spare Parts Table -->
+            <section class="tickets-section">
+                <div class="tickets-table">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%;">Barang & SKU</th>
+                                <th style="width: 15%;">Kategori</th>
+                                <th style="width: 15%;">Perangkat</th>
+                                <th style="width: 15%; text-align:center;">Stok Unit</th>
+                                <th style="width: 15%;">Status</th>
+                                <th style="width: 10%;">Lokasi</th>
+                                <th style="width: 10%; text-align:right;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for part in parts %}
+                            <tr>
+                                <td>
+                                    <strong class="text--sm">{{ part.name }}</strong><br>
+                                    <span class="text--xs text--semibold text--secondary">{{ part.sku }}</span>
+                                </td>
+                                <td>
+                                    <span class="text--sm">{{ part.get_category_display }}</span>
+                                </td>
+                                <td>
+                                    <span class="text--sm">{{ part.get_device_type_display }}</span>
+                                </td>
+                                <td>
+                                    <div class="stock-adjuster" style="justify-content:center;">
+                                        <!-- Quick minus button -->
+                                        <a href="{% url 'adjust_stock' part.id 'down' %}" class="stock-adjust-btn stock-adjust-btn--minus" aria-label="Kurangi stok 1">
+                                            -
+                                        </a>
+                                        <span class="stock-adjuster__qty">{{ part.stock }}</span>
+                                        <!-- Quick plus button -->
+                                        <a href="{% url 'adjust_stock' part.id 'up' %}" class="stock-adjust-btn stock-adjust-btn--plus" aria-label="Tambah stok 1">
+                                            +
+                                        </a>
+                                    </div>
+                                    <div style="text-align:center; margin-top:4px;">
+                                        <span class="text--xs text--secondary" style="font-size:10px;">Min: {{ part.min_stock }} unit</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if part.is_out_of_stock %}
+                                        <span class="stock-badge stock-badge--out">
+                                            <i data-lucide="x-circle" size="14"></i>
+                                            <span>Habis</span>
+                                        </span>
+                                    {% elif part.is_low_stock %}
+                                        <span class="stock-badge stock-badge--low">
+                                            <i data-lucide="alert-circle" size="14"></i>
+                                            <span>Kritis</span>
+                                        </span>
+                                    {% else %}
+                                        <span class="stock-badge stock-badge--ok">
+                                            <i data-lucide="check-circle-2" size="14"></i>
+                                            <span>Aman</span>
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="text--sm text--semibold">{{ part.location|default:"-" }}</span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; justify-content:flex-end; gap:8px;">
+                                        <!-- Edit button triggers modal -->
+                                        <button class="btn btn--secondary btn--sm btn--icon-only editPartBtn" 
+                                                data-id="{{ part.id }}"
+                                                data-name="{{ part.name }}"
+                                                data-sku="{{ part.sku }}"
+                                                data-category="{{ part.category }}"
+                                                data-device-type="{{ part.device_type }}"
+                                                data-stock="{{ part.stock }}"
+                                                data-min-stock="{{ part.min_stock }}"
+                                                data-cost-price="{{ part.cost_price }}"
+                                                data-sell-price="{{ part.sell_price }}"
+                                                data-location="{{ part.location|default:'' }}"
+                                                aria-label="Edit barang">
+                                            <i data-lucide="edit" size="14"></i>
+                                        </button>
+                                        <a href="{% url 'hapus_sparepart' part.id %}" 
+                                           class="btn btn--secondary btn--sm btn--icon-only" 
+                                           onclick="return confirm('Apakah Anda yakin ingin menghapus sukucadang {{ part.name }} ({{ part.sku }})?');"
+                                           aria-label="Hapus barang"
+                                           style="color: var(--foundation-rednormal);">
+                                            <i data-lucide="trash-2" size="14"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text--center text--secondary py-6">
+                                    Tidak ada barang sukucadang ditemukan. 🛠️
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Custom Paginator -->
+                {% if parts.has_other_pages %}
+                <div class="custom-pagination">
+                    <span class="pagination-summary text--sm text--secondary">
+                        Menampilkan {{ parts.start_index }}-{{ parts.end_index }} dari {{ parts.paginator.count }} item
+                    </span>
+                    <div class="pagination-controls">
+                        {% if parts.has_previous %}
+                            <a href="?page={{ parts.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_device %}&device_type={{ selected_device }}{% endif %}{% if selected_stock_status %}&stock_status={{ selected_stock_status }}{% endif %}" class="pagination-btn">
+                                <i data-lucide="chevron-left" size="16"></i>
+                            </a>
+                        {% else %}
+                            <span class="pagination-btn pagination-btn--disabled">
+                                <i data-lucide="chevron-left" size="16"></i>
+                            </span>
+                        {% endif %}
+
+                        {% for num in parts.paginator.page_range %}
+                            {% if parts.number == num %}
+                                <span class="pagination-btn pagination-btn--active">{{ num }}</span>
+                            {% else %}
+                                <a href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_device %}&device_type={{ selected_device }}{% endif %}{% if selected_stock_status %}&stock_status={{ selected_stock_status }}{% endif %}" class="pagination-btn">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if parts.has_next %}
+                            <a href="?page={{ parts.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_device %}&device_type={{ selected_device }}{% endif %}{% if selected_stock_status %}&stock_status={{ selected_stock_status }}{% endif %}" class="pagination-btn">
+                                <i data-lucide="chevron-right" size="16"></i>
+                            </a>
+                        {% else %}
+                            <span class="pagination-btn pagination-btn--disabled">
+                                <i data-lucide="chevron-right" size="16"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         MODAL TAMBAH SUKUCADANG
+         ========================================== -->
+    <div class="modal-overlay" id="addPartModal">
+        <div class="modal-container animate-fade-in">
+            <div class="modal-header">
+                <h3 class="modal-title">Tambah Sukucadang Baru</h3>
+                <button class="modal-close-btn" id="closeAddModalBtn" aria-label="Tutup modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'tambah_sparepart' %}" method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="add_name">Nama Sukucadang *</label>
+                            <input type="text" name="name" id="add_name" class="form-input" placeholder="Contoh: LCD iPhone 12 Pro Max" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="add_sku">Kode SKU / Part Number *</label>
+                            <input type="text" name="sku" id="add_sku" class="form-input" placeholder="Contoh: SP-IP12PM-LCD" style="text-transform: uppercase;" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="add_category">Kategori</label>
+                            <select name="category" id="add_category" class="form-select">
+                                {% for value, label in category_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="add_device_type">Tipe Perangkat</label>
+                            <select name="device_type" id="add_device_type" class="form-select">
+                                {% for value, label in device_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="add_stock">Stok Awal</label>
+                            <input type="number" name="stock" id="add_stock" class="form-input" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="add_min_stock">Stok Minimal (Peringatan Kritis)</label>
+                            <input type="number" name="min_stock" id="add_min_stock" class="form-input" min="1" value="5">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="add_cost_price">Harga Beli Awal (Rp)</label>
+                            <input type="number" name="cost_price" id="add_cost_price" class="form-input" min="0" value="0" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="add_sell_price">Harga Jual Jasa (Rp)</label>
+                            <input type="number" name="sell_price" id="add_sell_price" class="form-input" min="0" value="0" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div class="form-grid form-grid--full">
+                        <div class="form-group">
+                            <label class="form-label" for="add_location">Lokasi Rak / Box Penyimpanan</label>
+                            <input type="text" name="location" id="add_location" class="form-input" placeholder="Contoh: Rak A - Laci B3">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn--secondary" id="cancelAddModalBtn">Batal</button>
+                        <button type="submit" class="btn btn--primary">Simpan Barang</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL EDIT SUKUCADANG
+         ========================================== -->
+    <div class="modal-overlay" id="editPartModal">
+        <div class="modal-container animate-fade-in">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Data Sukucadang</h3>
+                <button class="modal-close-btn" id="closeEditModalBtn" aria-label="Tutup modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editPartForm" action="" method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="edit_name">Nama Sukucadang *</label>
+                            <input type="text" name="name" id="edit_name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="edit_sku">Kode SKU / Part Number *</label>
+                            <input type="text" name="sku" id="edit_sku" class="form-input" style="text-transform: uppercase;" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="edit_category">Kategori</label>
+                            <select name="category" id="edit_category" class="form-select">
+                                {% for value, label in category_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="edit_device_type">Tipe Perangkat</label>
+                            <select name="device_type" id="edit_device_type" class="form-select">
+                                {% for value, label in device_choices %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="edit_stock">Stok Saat Ini</label>
+                            <input type="number" name="stock" id="edit_stock" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="edit_min_stock">Stok Minimal</label>
+                            <input type="number" name="min_stock" id="edit_min_stock" class="form-input" min="1">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="edit_cost_price">Harga Beli (Rp)</label>
+                            <input type="number" name="cost_price" id="edit_cost_price" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="edit_sell_price">Harga Jual (Rp)</label>
+                            <input type="number" name="sell_price" id="edit_sell_price" class="form-input" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-grid form-grid--full">
+                        <div class="form-group">
+                            <label class="form-label" for="edit_location">Lokasi Rak / Box</label>
+                            <input type="text" name="location" id="edit_location" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn--secondary" id="cancelEditModalBtn">Batal</button>
+                        <button type="submit" class="btn btn--primary">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            
+            // Format Price tags to Indonesian Rupiah on load
+            const priceTags = document.querySelectorAll('.price-tag');
+            priceTags.forEach(tag => {
+                const val = parseFloat(tag.textContent);
+                if (!isNaN(val)) {
+                    tag.textContent = new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        maximumFractionDigits: 0
+                    }).format(val);
+                }
+            });
+
+            // ==========================================
+            // MODAL ADD SPAREPART INTERACTION
+            // ==========================================
+            const addOverlay = document.getElementById('addPartModal');
+            const openAddBtn = document.getElementById('openAddModalBtn');
+            const closeAddBtn = document.getElementById('closeAddModalBtn');
+            const cancelAddBtn = document.getElementById('cancelAddModalBtn');
+
+            function openAddModal() {
+                addOverlay.classList.add('modal-overlay--open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeAddModal() {
+                addOverlay.classList.remove('modal-overlay--open');
+                document.body.style.overflow = '';
+            }
+
+            if (openAddBtn) openAddBtn.addEventListener('click', openAddModal);
+            if (closeAddBtn) closeAddBtn.addEventListener('click', closeAddModal);
+            if (cancelAddBtn) cancelAddBtn.addEventListener('click', closeAddModal);
+
+            // ==========================================
+            // MODAL EDIT SPAREPART INTERACTION
+            // ==========================================
+            const editOverlay = document.getElementById('editPartModal');
+            const closeEditBtn = document.getElementById('closeEditModalBtn');
+            const cancelEditBtn = document.getElementById('cancelEditModalBtn');
+            const editForm = document.getElementById('editPartForm');
+
+            const editButtons = document.querySelectorAll('.editPartBtn');
+            editButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name');
+                    const sku = this.getAttribute('data-sku');
+                    const category = this.getAttribute('data-category');
+                    const deviceType = this.getAttribute('data-device-type');
+                    const stock = this.getAttribute('data-stock');
+                    const minStock = this.getAttribute('data-min-stock');
+                    const costPrice = this.getAttribute('data-cost-price');
+                    const sellPrice = this.getAttribute('data-sell-price');
+                    const location = this.getAttribute('data-location');
+
+                    // Populate fields
+                    document.getElementById('edit_name').value = name;
+                    document.getElementById('edit_sku').value = sku;
+                    document.getElementById('edit_category').value = category;
+                    document.getElementById('edit_device_type').value = deviceType;
+                    document.getElementById('edit_stock').value = stock;
+                    document.getElementById('edit_min_stock').value = minStock;
+                    document.getElementById('edit_cost_price').value = costPrice;
+                    document.getElementById('edit_sell_price').value = sellPrice;
+                    document.getElementById('edit_location').value = location;
+
+                    // Set form action dynamic URL
+                    editForm.action = `/dashboard-teknisi/inventoris/edit/${id}/`;
+
+                    // Open modal
+                    editOverlay.classList.add('modal-overlay--open');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            function closeEditModal() {
+                editOverlay.classList.remove('modal-overlay--open');
+                document.body.style.overflow = '';
+            }
+
+            if (closeEditBtn) closeEditBtn.addEventListener('click', closeEditModal);
+            if (cancelEditBtn) cancelEditBtn.addEventListener('click', closeEditModal);
+
+            // Close modals when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === addOverlay) closeAddModal();
+                if (e.target === editOverlay) closeEditModal();
+            });
+        });
+    </script>
+</body>
+</html>

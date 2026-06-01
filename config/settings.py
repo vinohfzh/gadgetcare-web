@@ -123,4 +123,6 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-ALLOWED_HOSTS = ['192.168.1.52', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.1.177', '127.0.0.1']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+LOGIN_URL = 'login'

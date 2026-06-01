@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import UserProfile, Ticket, ActivityLog
+from .models import UserProfile, Ticket, ActivityLog, SparePart, SparePartUsage
 
 def home(request):
     return render(request, 'home.html')
@@ -222,3 +222,485 @@ def update_ticket_status(request, ticket_id, new_status):
         messages.error(request, 'Status perbaikan tidak valid.')
         
     return redirect('dashboard_teknisi')
+
+@login_required
+def daftar_perbaikan(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses untuk halaman ini.')
+        return redirect('cek_status')
+        
+    from django.db.models import Q
+    from django.core.paginator import Paginator
+    from django.utils import timezone
+    
+    tickets_list = Ticket.objects.filter(technician=request.user).order_by('-updated_at')
+    
+    q = request.GET.get('q', '').strip()
+    if q:
+        tickets_list = tickets_list.filter(
+            Q(ticket_number__icontains=q) |
+            Q(device_name__icontains=q) |
+            Q(customer_name__icontains=q) |
+            Q(complaint__icontains=q)
+        )
+        
+    total_antrian = Ticket.objects.filter(technician=request.user).exclude(status='selesai').count()
+    sedang_diproses = Ticket.objects.filter(technician=request.user, status='perbaikan').count()
+    
+    today = timezone.localdate()
+    selesai_hari_ini = Ticket.objects.filter(
+        technician=request.user,
+        status='selesai',
+        updated_at__date=today
+    ).count()
+    
+    paginator = Paginator(tickets_list, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    available_tickets = Ticket.objects.filter(status='menunggu', technician__isnull=True)
+    
+    context = {
+        'tickets': page_obj,
+        'q': q,
+        'total_antrian': total_antrian,
+        'sedang_diproses': sedang_diproses,
+        'selesai_hari_ini': selesai_hari_ini,
+        'available_tickets': available_tickets,
+    }
+    
+    return render(request, 'dashboard-teknisi-perbaikan.html', context)
+
+
+# ==========================================
+# INVENTORY / SPARE PARTS VIEWS
+# ==========================================
+
+@login_required
+def dashboard_inventoris(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses untuk halaman ini.')
+        return redirect('cek_status')
+        
+    from django.db.models import Q, Sum
+    from django.core.paginator import Paginator
+    
+    # Base Queryset
+    parts_list = SparePart.objects.all().order_by('name')
+    
+    # 1. Search Query
+    q = request.GET.get('q', '').strip()
+    if q:
+        parts_list = parts_list.filter(
+            Q(name__icontains=q) |
+            Q(sku__icontains=q) |
+            Q(location__icontains=q)
+        )
+        
+    # 2. Category Filter
+    category = request.GET.get('category', '').strip()
+    if category:
+        parts_list = parts_list.filter(category=category)
+        
+    # 3. Device Type Filter
+    device_type = request.GET.get('device_type', '').strip()
+    if device_type:
+        parts_list = parts_list.filter(device_type=device_type)
+        
+    # 4. Stock Status Filter
+    stock_status = request.GET.get('stock_status', '').strip()
+    if stock_status == 'low':
+        parts_list = [p for p in parts_list if p.is_low_stock]
+    elif stock_status == 'out':
+        parts_list = [p for p in parts_list if p.is_out_of_stock]
+    
+    # Calculated Statistics
+    all_parts = SparePart.objects.all()
+    total_items = all_parts.count()
+    
+    # Sum of stock
+    total_stock = all_parts.aggregate(total=Sum('stock'))['total'] or 0
+    
+    # Low stock & Out of stock counts
+    low_stock_count = 0
+    out_of_stock_count = 0
+    inventory_value = 0
+    
+    for p in all_parts:
+        if p.is_out_of_stock:
+            out_of_stock_count += 1
+        elif p.is_low_stock:
+            low_stock_count += 1
+        inventory_value += (p.stock * p.cost_price)
+        
+    # Available tickets for Sidebar badge count
+    available_tickets = Ticket.objects.filter(status='menunggu', technician__isnull=True)
+    
+    # Pagination
+    paginator = Paginator(parts_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'parts': page_obj,
+        'q': q,
+        'selected_category': category,
+        'selected_device': device_type,
+        'selected_stock_status': stock_status,
+        
+        # Choice tuples for forms/filters
+        'category_choices': SparePart.CATEGORY_CHOICES,
+        'device_choices': SparePart.DEVICE_CHOICES,
+        
+        # Stats
+        'total_items': total_items,
+        'total_stock': total_stock,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
+        'inventory_value': inventory_value,
+        
+        'available_tickets': available_tickets,
+    }
+    
+    return render(request, 'dashboard-inventoris.html', context)
+
+
+@login_required
+def tambah_sparepart(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses.')
+        return redirect('cek_status')
+        
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        sku = request.POST.get('sku', '').strip().upper()
+        category = request.POST.get('category', '').strip()
+        device_type = request.POST.get('device_type', '').strip()
+        stock = int(request.POST.get('stock', 0) or 0)
+        min_stock = int(request.POST.get('min_stock', 5) or 5)
+        cost_price = int(request.POST.get('cost_price', 0) or 0)
+        sell_price = int(request.POST.get('sell_price', 0) or 0)
+        location = request.POST.get('location', '').strip()
+        
+        if not name or not sku:
+            messages.error(request, 'Nama dan SKU wajib diisi.')
+            return redirect('dashboard_inventoris')
+            
+        if SparePart.objects.filter(sku=sku).exists():
+            messages.error(request, f'Sukucadang dengan SKU {sku} sudah terdaftar.')
+            return redirect('dashboard_inventoris')
+            
+        try:
+            part = SparePart.objects.create(
+                name=name, sku=sku, category=category, device_type=device_type,
+                stock=stock, min_stock=min_stock, cost_price=cost_price,
+                sell_price=sell_price, location=location
+            )
+            
+            # Create Stock Movement if initial stock is > 0
+            if stock > 0:
+                SparePartUsage.objects.create(
+                    spare_part=part,
+                    quantity=stock,
+                    activity_type='tambah',
+                    notes='Stok awal pendaftaran barang baru.'
+                )
+                
+            # Log Activity
+            tech_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+            ActivityLog.objects.create(
+                title=f"Sukucadang {sku} Didaftarkan",
+                description=f"{tech_name} mendaftarkan sukucadang baru: {name} dengan stok {stock}.",
+                icon_type='green'
+            )
+            
+            messages.success(request, f'Sukucadang {name} ({sku}) berhasil ditambahkan.')
+        except Exception as e:
+            messages.error(request, f'Gagal menambahkan sukucadang: {str(e)}')
+            
+    return redirect('dashboard_inventoris')
+
+
+@login_required
+def edit_sparepart(request, part_id):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses.')
+        return redirect('cek_status')
+        
+    part = get_object_or_404(SparePart, id=part_id)
+    
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        sku = request.POST.get('sku', '').strip().upper()
+        category = request.POST.get('category', '').strip()
+        device_type = request.POST.get('device_type', '').strip()
+        min_stock = int(request.POST.get('min_stock', 5) or 5)
+        cost_price = int(request.POST.get('cost_price', 0) or 0)
+        sell_price = int(request.POST.get('sell_price', 0) or 0)
+        location = request.POST.get('location', '').strip()
+        new_stock = int(request.POST.get('stock', part.stock) or part.stock)
+        
+        if not name or not sku:
+            messages.error(request, 'Nama dan SKU wajib diisi.')
+            return redirect('dashboard_inventoris')
+            
+        # Check SKU uniqueness if changed
+        if sku != part.sku and SparePart.objects.filter(sku=sku).exists():
+            messages.error(request, f'SKU {sku} sudah digunakan barang lain.')
+            return redirect('dashboard_inventoris')
+            
+        try:
+            # Check if stock changed to create usage record
+            stock_diff = new_stock - part.stock
+            
+            part.name = name
+            part.sku = sku
+            part.category = category
+            part.device_type = device_type
+            part.min_stock = min_stock
+            part.cost_price = cost_price
+            part.sell_price = sell_price
+            part.location = location
+            part.stock = new_stock
+            part.save()
+            
+            if stock_diff != 0:
+                act_type = 'tambah' if stock_diff > 0 else 'pakai'
+                SparePartUsage.objects.create(
+                    spare_part=part,
+                    quantity=stock_diff,
+                    activity_type=act_type,
+                    notes='Penyesuaian stok manual dari menu edit.'
+                )
+                
+            messages.success(request, f'Data sukucadang {name} berhasil diperbarui.')
+        except Exception as e:
+            messages.error(request, f'Gagal memperbarui sukucadang: {str(e)}')
+            
+    return redirect('dashboard_inventoris')
+
+
+@login_required
+def hapus_sparepart(request, part_id):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses.')
+        return redirect('cek_status')
+        
+    part = get_object_or_404(SparePart, id=part_id)
+    
+    try:
+        name = part.name
+        sku = part.sku
+        part.delete()
+        
+        # Log Activity
+        tech_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+        ActivityLog.objects.create(
+            title=f"Sukucadang {sku} Dihapus",
+            description=f"{tech_name} menghapus sukucadang: {name} ({sku}) dari sistem.",
+            icon_type='red'
+        )
+        
+        messages.success(request, f'Sukucadang {name} ({sku}) berhasil dihapus.')
+    except Exception as e:
+        messages.error(request, f'Gagal menghapus sukucadang: {str(e)}')
+        
+    return redirect('dashboard_inventoris')
+
+
+@login_required
+def adjust_stock(request, part_id, direction):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses.')
+        return redirect('cek_status')
+        
+    part = get_object_or_404(SparePart, id=part_id)
+    
+    try:
+        qty = 0
+        if direction == 'up':
+            qty = 1
+            part.stock += 1
+            act_type = 'tambah'
+            notes = 'Penyesuaian instan: Stok ditambah 1 unit.'
+        elif direction == 'down':
+            if part.stock <= 0:
+                messages.error(request, f'Stok {part.name} sudah kosong, tidak bisa dikurangi.')
+                return redirect('dashboard_inventoris')
+            qty = -1
+            part.stock -= 1
+            act_type = 'pakai'
+            notes = 'Penyesuaian instan: Stok dikurangi 1 unit.'
+        else:
+            messages.error(request, 'Penyesuaian tidak valid.')
+            return redirect('dashboard_inventoris')
+            
+        part.save()
+        
+        # Log stock movement
+        SparePartUsage.objects.create(
+            spare_part=part,
+            quantity=qty,
+            activity_type=act_type,
+            notes=notes
+        )
+        
+        messages.success(request, f'Stok {part.name} berhasil diperbarui ({part.stock} unit).')
+    except Exception as e:
+        messages.error(request, f'Gagal menyesuaikan stok: {str(e)}')
+        
+    return redirect('dashboard_inventoris')
+
+
+@login_required
+def riwayat_inventoris(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses untuk halaman ini.')
+        return redirect('cek_status')
+        
+    from django.core.paginator import Paginator
+    
+    # Get all usages / movements
+    usages_list = SparePartUsage.objects.all().order_by('-created_at')
+    
+    # Filter by search
+    q = request.GET.get('q', '').strip()
+    if q:
+        from django.db.models import Q
+        usages_list = usages_list.filter(
+            Q(spare_part__name__icontains=q) |
+            Q(spare_part__sku__icontains=q) |
+            Q(notes__icontains=q)
+        )
+        
+    # Filter by activity type
+    activity_type = request.GET.get('activity_type', '').strip()
+    if activity_type:
+        usages_list = usages_list.filter(activity_type=activity_type)
+        
+    # Paginator
+    paginator = Paginator(usages_list, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    available_tickets = Ticket.objects.filter(status='menunggu', technician__isnull=True)
+    
+    context = {
+        'usages': page_obj,
+        'q': q,
+        'selected_activity': activity_type,
+        'activity_choices': SparePartUsage.ACTIVITY_CHOICES,
+        'available_tickets': available_tickets,
+    }
+    
+    return render(request, 'dashboard-inventoris-riwayat.html', context)
+
+
+@login_required
+def dashboard_pengaturan(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses untuk halaman ini.')
+        return redirect('cek_status')
+        
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'update_profile':
+            full_name = request.POST.get('full_name', '').strip()
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            
+            if not full_name or not email:
+                messages.error(request, 'Nama Lengkap dan Email wajib diisi.')
+                return redirect('dashboard_pengaturan')
+                
+            # Split full name
+            names = full_name.split(' ', 1)
+            first_name = names[0]
+            last_name = names[1] if len(names) > 1 else ''
+            
+            # Check email uniqueness
+            if User.objects.filter(email__iexact=email).exclude(id=request.user.id).exists():
+                messages.error(request, 'Alamat email ini sudah digunakan oleh akun lain.')
+                return redirect('dashboard_pengaturan')
+                
+            try:
+                # Save User details
+                user = request.user
+                user.first_name = first_name
+                user.last_name = last_name
+                user.email = email
+                user.save()
+                
+                # Save Profile details
+                profile = request.user.profile
+                profile.phone = phone
+                profile.save()
+                
+                # Create Activity Log
+                tech_name = f"{user.first_name} {user.last_name}".strip() or user.username
+                ActivityLog.objects.create(
+                    title="Profil Diperbarui",
+                    description=f"Teknisi {tech_name} memperbarui informasi profil pribadinya.",
+                    icon_type='blue'
+                )
+                
+                messages.success(request, 'Profil pribadi Anda berhasil diperbarui.')
+            except Exception as e:
+                messages.error(request, f'Gagal memperbarui profil: {str(e)}')
+                
+        elif action == 'update_password':
+            from django.contrib.auth import update_session_auth_hash
+            
+            old_password = request.POST.get('old_password', '').strip()
+            new_password = request.POST.get('new_password', '').strip()
+            confirm_password = request.POST.get('confirm_password', '').strip()
+            
+            if not old_password or not new_password or not confirm_password:
+                messages.error(request, 'Semua kolom kata sandi wajib diisi.')
+                return redirect('dashboard_pengaturan')
+                
+            if not request.user.check_password(old_password):
+                messages.error(request, 'Kata sandi saat ini salah.')
+                return redirect('dashboard_pengaturan')
+                
+            if len(new_password) < 6:
+                messages.error(request, 'Kata sandi baru minimal harus terdiri dari 6 karakter.')
+                return redirect('dashboard_pengaturan')
+                
+            if new_password != confirm_password:
+                messages.error(request, 'Konfirmasi kata sandi baru tidak cocok.')
+                return redirect('dashboard_pengaturan')
+                
+            try:
+                user = request.user
+                user.set_password(new_password)
+                user.save()
+                
+                # Update session to prevent logout
+                update_session_auth_hash(request, user)
+                
+                # Create Activity Log
+                tech_name = f"{user.first_name} {user.last_name}".strip() or user.username
+                ActivityLog.objects.create(
+                    title="Kata Sandi Diubah",
+                    description=f"Teknisi {tech_name} berhasil mengubah kata sandinya.",
+                    icon_type='red'
+                )
+                
+                messages.success(request, 'Kata sandi Anda berhasil diperbarui.')
+            except Exception as e:
+                messages.error(request, f'Gagal memperbarui kata sandi: {str(e)}')
+                
+        return redirect('dashboard_pengaturan')
+        
+    # GET request
+    available_tickets = Ticket.objects.filter(status='menunggu', technician__isnull=True)
+    full_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+    
+    context = {
+        'full_name': full_name,
+        'available_tickets': available_tickets,
+    }
+    
+    return render(request, 'dashboard-teknisi-pengaturan.html', context)

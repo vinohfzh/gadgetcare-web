@@ -1,0 +1,526 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id" data-colors-mode="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Profil & Pengaturan Teknisi - GadgetCare">
+    <link rel="stylesheet" href="{% static 'css/dashboard-teknisi.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Profil & Pengaturan | GadgetCare</title>
+</head>
+<body>
+    <div class="dashboard">
+        
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar__brand">
+                <img class="sidebar__logo" src="{% static 'img/logo-gadgetcare.svg' %}" alt="GadgetCare Logo" />
+                <span class="sidebar__brand-name text--heading text--bold">GadgetCare</span>
+            </div>
+            
+            <nav class="sidebar__nav" aria-label="Main Navigation">
+                <a href="{% url 'dashboard_teknisi' %}" class="nav-item">
+                    <i data-lucide="layout-dashboard" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Dashboard</span>
+                    {% if available_tickets %}
+                        <span class="nav-item__badge">{{ available_tickets|length }}</span>
+                    {% endif %}
+                </a>
+                
+                <a href="{% url 'daftar_perbaikan' %}" class="nav-item">
+                    <i data-lucide="wrench" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Perbaikan</span>
+                </a>
+                
+                <a href="{% url 'dashboard_inventoris' %}" class="nav-item">
+                    <i data-lucide="package" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Inventaris</span>
+                </a>
+                
+                <a href="#" class="nav-item">
+                    <i data-lucide="bar-chart-3" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Laporan</span>
+                </a>
+                
+                <a href="{% url 'dashboard_pengaturan' %}" class="nav-item nav-item--active" aria-current="page">
+                    <i data-lucide="settings" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar__footer">
+                <a href="#" class="nav-item">
+                    <i data-lucide="help-circle" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Bantuan</span>
+                </a>
+                
+                <a href="{% url 'logout' %}" class="nav-item nav-item--danger">
+                    <i data-lucide="log-out" class="nav-item__icon" stroke-width="1.5"></i>
+                    <span>Keluar</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <main class="main-content">
+            
+            <!-- Header -->
+            <header class="header">
+                <div class="header__search" style="visibility: hidden;">
+                    <i data-lucide="search" class="nav-item__icon" stroke-width="1.5" aria-hidden="true"></i>
+                    <input type="search" placeholder="Telusuri...">
+                </div>
+                
+                <div class="header__actions">
+                    <button class="header__notification" aria-label="Notifikasi" type="button">
+                        <i data-lucide="bell" stroke-width="1.5" aria-hidden="true"></i>
+                        <span class="header__notification-badge" hidden></span>
+                    </button>
+                    
+                    <div class="header__user" tabindex="0" role="button" aria-label="Profil pengguna">
+                        <img class="header__avatar" 
+                             src="https://ui-avatars.com/api/?name={{ user.first_name|default:'U' }}+{{ user.last_name|default:'ser' }}&background=0D8ABC&color=fff&rounded=true" 
+                             alt="Avatar {{ user.first_name }}">
+                        <div class="header__user-info">
+                            <span class="header__user-name text--semibold">{{ user.first_name }} {{ user.last_name }}</span>
+                            <span class="header__user-role text--xs text--secondary">Teknisi</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Django Alert Messages -->
+            {% if messages %}
+                <div class="alerts-container">
+                    {% for message in messages %}
+                        <div class="alert alert--{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} animate-fade-in">
+                            <div class="alert__icon">
+                                {% if message.tags == 'error' or message.tags == 'danger' %}
+                                    <i data-lucide="alert-circle" stroke-width="2" size="18"></i>
+                                {% elif message.tags == 'success' %}
+                                    <i data-lucide="check-circle" stroke-width="2" size="18"></i>
+                                {% else %}
+                                    <i data-lucide="info" stroke-width="2" size="18"></i>
+                                {% endif %}
+                            </div>
+                            <div class="alert__message">{{ message }}</div>
+                            <button class="alert__close" onclick="this.parentElement.remove()" aria-label="Tutup alert">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Title block -->
+            <section class="greeting animate-fade-in">
+                <h1 class="greeting__title text--heading">Pengaturan Profil</h1>
+                <p class="greeting__subtitle text--secondary">Kelola informasi pribadi, spesialisasi, dan preferensi keamanan Anda.</p>
+            </section>
+
+            <!-- Profile Dashboard Content Grid -->
+            <section class="profile-grid">
+                
+                <!-- LEFT COLUMN: Profile info & Skills Card -->
+                <div style="display:flex; flex-direction:column; gap:20px; width:100%;">
+                    <!-- Profile Card -->
+                    <div class="profile-sidebar-card">
+                        <div class="profile-avatar-container" title="Klik untuk mengubah foto profil">
+                            <img class="profile-avatar-img" 
+                                 src="https://ui-avatars.com/api/?name={{ user.first_name|default:'U' }}+{{ user.last_name|default:'ser' }}&background=0D8ABC&color=fff&rounded=true" 
+                                 alt="Avatar {{ user.first_name }}">
+                            <div class="avatar-upload-overlay" onclick="triggerAvatarUpload()">
+                                <i data-lucide="camera"></i>
+                                <span>Ubah Foto</span>
+                            </div>
+                            <input type="file" id="avatar-input" style="display: none;" accept="image/*" onchange="previewAvatar(event)">
+                        </div>
+                        <h2 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h2>
+                        <span class="profile-role-badge">Senior Technician</span>
+                        
+                        <!-- Premium Interactive Status Box -->
+                        <div style="width: 100%; display: flex; flex-direction: column; gap: 4px; text-align: left;">
+                            <span class="text--xs text--secondary" style="font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding-left: 2px;">Status Kerja</span>
+                            <div class="status-dropdown-container">
+                                <button type="button" class="status-btn status-btn--available" id="status-toggle-btn">
+                                    <div class="status-btn__info">
+                                        <div class="profile-status-dot"></div>
+                                        <span id="status-label-text">Tersedia</span>
+                                    </div>
+                                    <i data-lucide="chevron-down" size="14" stroke-width="2.5"></i>
+                                </button>
+                                <div class="status-menu" id="status-options-menu">
+                                    <div class="status-option" data-status="available">
+                                        <div class="profile-status-dot status-dot--available"></div>
+                                        <span>Tersedia</span>
+                                    </div>
+                                    <div class="status-option" data-status="busy">
+                                        <div class="profile-status-dot status-dot--busy"></div>
+                                        <span>Sibuk</span>
+                                    </div>
+                                    <div class="status-option" data-status="break">
+                                        <div class="profile-status-dot status-dot--break"></div>
+                                        <span>Istirahat</span>
+                                    </div>
+                                    <div class="status-option" data-status="off">
+                                        <div class="profile-status-dot status-dot--off"></div>
+                                        <span>Off Kerja</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Specializations Card -->
+                    <div class="spec-card">
+                        <h3 class="spec-title" style="margin-bottom: 4px;">Spesialisasi Keahlian</h3>
+                        <div class="spec-badges-container">
+                            <span class="spec-badge spec-badge--interactive spec-badge--active" data-spec="iphone" onclick="toggleSpecialization(this)">
+                                <i data-lucide="smartphone" size="14"></i>
+                                <span>iPhone</span>
+                            </span>
+                            <span class="spec-badge spec-badge--interactive spec-badge--active" data-spec="macbook" onclick="toggleSpecialization(this)">
+                                <i data-lucide="laptop" size="14"></i>
+                                <span>MacBook</span>
+                            </span>
+                            <span class="spec-badge spec-badge--interactive spec-badge--active" data-spec="logicboard" onclick="toggleSpecialization(this)">
+                                <i data-lucide="cpu" size="14"></i>
+                                <span>Logic Board</span>
+                            </span>
+                            <span class="spec-badge spec-badge--interactive spec-badge--inactive" data-spec="ipad" onclick="toggleSpecialization(this)">
+                                <i data-lucide="tablet" size="14"></i>
+                                <span>iPad / Tablet</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Forms & Settings Toggles -->
+                <div class="settings-panel-container">
+                    
+                    <!-- 1. Personal Details Form -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon">
+                                <i data-lucide="user" stroke-width="1.75"></i>
+                            </div>
+                            <h3 class="settings-card-title">Informasi Pribadi</h3>
+                        </div>
+                        
+                        <form action="{% url 'dashboard_pengaturan' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_profile">
+                            
+                            <div class="profile-form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="full_name">Nama Lengkap *</label>
+                                    <input type="text" name="full_name" id="full_name" class="form-input" value="{{ full_name }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="email">Alamat Email *</label>
+                                    <input type="email" name="email" id="email" class="form-input" value="{{ user.email }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="phone">Nomor Telepon</label>
+                                    <input type="text" name="phone" id="phone" class="form-input" value="{{ user.profile.phone|default:'' }}" placeholder="Contoh: +6281234567890">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">ID Karyawan (Non-editable)</label>
+                                    <input type="text" class="form-input" value="TECH-{% if user.id < 10 %}00{% elif user.id < 100 %}0{% endif %}{{ user.id }}" disabled style="background-color: var(--primary-light); color: var(--text-secondary); cursor: not-allowed; font-weight: 700;">
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn--primary">
+                                    <i data-lucide="save" size="14" style="margin-right:6px;"></i>
+                                    <span>Simpan Perubahan</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 2. Security (Password Reset) Form -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon settings-card-icon--security">
+                                <i data-lucide="shield-alert" stroke-width="1.75"></i>
+                            </div>
+                            <h3 class="settings-card-title">Keamanan Sandi</h3>
+                        </div>
+                        
+                        <form action="{% url 'dashboard_pengaturan' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="update_password">
+                            
+                            <div class="profile-form-grid">
+                                <div class="form-group form-group-full form-group-password">
+                                    <label class="form-label" for="old_password">Kata Sandi Saat Ini *</label>
+                                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                                        <i data-lucide="key" size="16" style="position: absolute; left: 14px; color: var(--text-secondary); pointer-events: none;"></i>
+                                        <input type="password" name="old_password" id="old_password" class="form-input" placeholder="••••••••" required style="padding-left: 44px;">
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-password">
+                                    <label class="form-label" for="new_password">Kata Sandi Baru *</label>
+                                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                                        <i data-lucide="key-round" size="16" style="position: absolute; left: 14px; color: var(--text-secondary); pointer-events: none;"></i>
+                                        <input type="password" name="new_password" id="new_password" class="form-input" placeholder="Minimal 6 karakter" required style="padding-left: 44px;">
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-password">
+                                    <label class="form-label" for="confirm_password">Konfirmasi Kata Sandi Baru *</label>
+                                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                                        <i data-lucide="check-check" size="16" style="position: absolute; left: 14px; color: var(--text-secondary); pointer-events: none;"></i>
+                                        <input type="password" name="confirm_password" id="confirm_password" class="form-input" placeholder="Ulangi kata sandi baru" required style="padding-left: 44px;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn--secondary" style="border-color: var(--foundation-rednormal); color: var(--foundation-rednormal); background: transparent;">
+                                    <i data-lucide="shield-check" size="14" style="margin-right:6px;"></i>
+                                    <span>Perbarui Sandi</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 3. Notification Preferences (Interactive Toggles) -->
+                    <div class="settings-card">
+                        <div class="settings-card-header">
+                            <div class="settings-card-icon settings-card-icon--pref">
+                                <i data-lucide="bell-ring" stroke-width="1.75"></i>
+                            </div>
+                            <h3 class="settings-card-title">Preferensi Notifikasi</h3>
+                        </div>
+                        
+                        <div style="display:flex; flex-direction:column; gap:16px;">
+                            <!-- Notification item 1 -->
+                            <div class="notification-item">
+                                <div class="notification-info">
+                                    <span class="notification-title">Tugas Perbaikan Baru</span>
+                                    <span class="notification-desc">Dapatkan notifikasi saat unit baru ditugaskan ke Anda</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="pref-perbaikan" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Notification item 2 -->
+                            <div class="notification-item">
+                                <div class="notification-info">
+                                    <span class="notification-title">Pembaruan Suku Cadang</span>
+                                    <span class="notification-desc">Pemberitahuan ketersediaan inventory yang Anda request</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="pref-sukucadang" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Notification item 3 -->
+                            <div class="notification-item">
+                                <div class="notification-info">
+                                    <span class="notification-title">Pesan Pelanggan</span>
+                                    <span class="notification-desc">Notifikasi ketika admin meneruskan catatan penting dari pelanggan</span>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="pref-pesan">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- Premium Toast Notification -->
+    <div class="premium-toast" id="save-toast">
+        <div class="premium-toast__icon">
+            <i data-lucide="check" size="16"></i>
+        </div>
+        <span class="premium-toast__text" id="toast-message-text">Pilihan berhasil disimpan!</span>
+    </div>
+
+    <!-- Initialize Lucide Icons & Premium Interactive Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            
+            // Premium Toast Function
+            const toast = document.getElementById('save-toast');
+            const toastText = document.getElementById('toast-message-text');
+            let toastTimeout;
+            
+            window.showToast = function(message, type = 'success') {
+                toastText.textContent = message;
+                
+                // Adjust styling based on type
+                if (type === 'error') {
+                    toast.style.borderColor = 'rgba(255, 0, 0, 0.3)';
+                    toast.querySelector('.premium-toast__icon').style.backgroundColor = 'rgba(255, 0, 0, 0.15)';
+                    toast.querySelector('.premium-toast__icon').style.color = '#ef4444';
+                    toast.querySelector('.premium-toast__icon i').setAttribute('data-lucide', 'x');
+                } else {
+                    toast.style.borderColor = 'rgba(69, 216, 138, 0.3)';
+                    toast.querySelector('.premium-toast__icon').style.backgroundColor = 'rgba(69, 216, 138, 0.15)';
+                    toast.querySelector('.premium-toast__icon').style.color = '#10b981';
+                    toast.querySelector('.premium-toast__icon i').setAttribute('data-lucide', 'check');
+                }
+                
+                lucide.createIcons();
+                
+                toast.classList.add('premium-toast--show');
+                
+                clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('premium-toast--show');
+                }, 3500);
+            }
+            
+            // 1. Status Dropdown Selector Logic
+            const statusToggleBtn = document.getElementById('status-toggle-btn');
+            const statusOptionsMenu = document.getElementById('status-options-menu');
+            const statusLabelText = document.getElementById('status-label-text');
+            
+            statusToggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                statusToggleBtn.classList.toggle('open');
+                statusOptionsMenu.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', function() {
+                statusToggleBtn.classList.remove('open');
+                statusOptionsMenu.classList.remove('show');
+            });
+            
+            document.querySelectorAll('.status-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const status = this.getAttribute('data-status');
+                    
+                    // Clear all existing status-specific button classes
+                    statusToggleBtn.className = 'status-btn';
+                    
+                    if (status === 'available') {
+                        statusToggleBtn.classList.add('status-btn--available');
+                        statusLabelText.textContent = 'Tersedia';
+                    } else if (status === 'busy') {
+                        statusToggleBtn.classList.add('status-btn--busy');
+                        statusLabelText.textContent = 'Sibuk';
+                    } else if (status === 'break') {
+                        statusToggleBtn.classList.add('status-btn--break');
+                        statusLabelText.textContent = 'Istirahat';
+                    } else if (status === 'off') {
+                        statusToggleBtn.classList.add('status-btn--off');
+                        statusLabelText.textContent = 'Off Kerja';
+                    }
+                    
+                    localStorage.setItem('tech_status', status);
+                    showToast('Status kerja Anda diubah menjadi: ' + statusLabelText.textContent);
+                });
+            });
+            
+            // Restore saved status preference
+            const savedStatus = localStorage.getItem('tech_status') || 'available';
+            const matchingOption = document.querySelector(`.status-option[data-status="${savedStatus}"]`);
+            if (matchingOption) {
+                // Instantly select without triggering a toast notification on initial page load
+                statusToggleBtn.className = 'status-btn';
+                if (savedStatus === 'available') {
+                    statusToggleBtn.classList.add('status-btn--available');
+                    statusLabelText.textContent = 'Tersedia';
+                } else if (savedStatus === 'busy') {
+                    statusToggleBtn.classList.add('status-btn--busy');
+                    statusLabelText.textContent = 'Sibuk';
+                } else if (savedStatus === 'break') {
+                    statusToggleBtn.classList.add('status-btn--break');
+                    statusLabelText.textContent = 'Istirahat';
+                } else if (savedStatus === 'off') {
+                    statusToggleBtn.classList.add('status-btn--off');
+                    statusLabelText.textContent = 'Off Kerja';
+                }
+            }
+
+            // 2. Specializations Dynamic Interactive Badges
+            window.toggleSpecialization = function(element) {
+                element.classList.toggle('spec-badge--active');
+                element.classList.toggle('spec-badge--inactive');
+                
+                const isActive = element.classList.contains('spec-badge--active');
+                const specName = element.querySelector('span').textContent;
+                const specId = element.getAttribute('data-spec');
+                
+                localStorage.setItem('spec_' + specId, isActive ? 'active' : 'inactive');
+                
+                if (isActive) {
+                    showToast('Keahlian ' + specName + ' diaktifkan!');
+                } else {
+                    showToast('Keahlian ' + specName + ' dinonaktifkan!', 'info');
+                }
+            };
+            
+            // Restore saved specializations preference
+            document.querySelectorAll('.spec-badge--interactive').forEach(badge => {
+                const specId = badge.getAttribute('data-spec');
+                const savedState = localStorage.getItem('spec_' + specId);
+                
+                if (savedState === 'inactive') {
+                    badge.classList.remove('spec-badge--active');
+                    badge.classList.add('spec-badge--inactive');
+                } else if (savedState === 'active') {
+                    badge.classList.add('spec-badge--active');
+                    badge.classList.remove('spec-badge--inactive');
+                }
+            });
+
+            // 3. Avatar Upload Mechanics (Mock Client-Side Preview)
+            window.triggerAvatarUpload = function() {
+                document.getElementById('avatar-input').click();
+            };
+            
+            window.previewAvatar = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // Check file size (max 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        showToast('Ukuran foto terlalu besar. Maksimal 2MB.', 'error');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Update both cards and header avatars
+                        document.querySelectorAll('.profile-avatar-img, .header__avatar').forEach(img => {
+                            img.src = e.target.result;
+                        });
+                        showToast('Foto profil baru berhasil dimuat!');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            // 4. Elastic Switches Preferences Toasts
+            document.querySelectorAll('.notification-item input[type="checkbox"]').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const title = this.closest('.notification-item').querySelector('.notification-title').textContent;
+                    const isEnabled = this.checked;
+                    showToast(title + (isEnabled ? ' telah diaktifkan' : ' telah dinonaktifkan'));
+                });
+            });
+            
+            // 5. Header Notification Click Effect
+            const bell = document.querySelector('.header__notification');
+            if (bell) {
+                bell.addEventListener('click', function() {
+                    this.classList.toggle('animate-pulse');
+                    showToast('Semua notifikasi ditandai sebagai telah dibaca!');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
