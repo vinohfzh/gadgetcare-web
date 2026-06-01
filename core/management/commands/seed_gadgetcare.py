@@ -140,7 +140,7 @@ class Command(BaseCommand):
                 'estimation': '1 - 2 Hari',
                 'technician': None
             },
-            # Selesai Tickets
+            # Selesai Tickets (with Costs)
             {
                 'ticket_number': 'tkt-8885',
                 'customer_name': 'Anton Wijaya',
@@ -150,12 +150,73 @@ class Command(BaseCommand):
                 'status': 'selesai',
                 'priority': 'normal',
                 'estimation': 'Selesai',
-                'technician': tech_user
+                'cost': 1200000,
+                'technician': tech_user,
+                'days_ago': 4
+            },
+            {
+                'ticket_number': 'tkt-8842',
+                'customer_name': 'Budi Santoso',
+                'device_name': 'iPhone 13 Pro',
+                'device_type': 'Smartphone',
+                'complaint': 'Ganti Layar OLED retak dan tidak responsif.',
+                'status': 'selesai',
+                'priority': 'tinggi',
+                'estimation': 'Selesai',
+                'cost': 3500000,
+                'technician': tech_user,
+                'days_ago': 0
+            },
+            {
+                'ticket_number': 'tkt-8839',
+                'customer_name': 'Siti Rahma',
+                'device_name': 'MacBook Air M1',
+                'device_type': 'Laptop',
+                'complaint': 'Pembersihan internal & ganti thermal paste.',
+                'status': 'selesai',
+                'priority': 'normal',
+                'estimation': 'Selesai',
+                'cost': 850000,
+                'technician': tech_user,
+                'days_ago': 1
+            },
+            {
+                'ticket_number': 'tkt-8821',
+                'customer_name': 'Dewi Lestari',
+                'device_name': 'Samsung S22 Ultra',
+                'device_type': 'Smartphone',
+                'complaint': 'Perbaikan konektor port charger yang longgar.',
+                'status': 'selesai',
+                'priority': 'normal',
+                'estimation': 'Selesai',
+                'cost': 450000,
+                'technician': tech_user,
+                'days_ago': 2
+            },
+            {
+                'ticket_number': 'tkt-8815',
+                'customer_name': 'Andi Wijaya',
+                'device_name': 'iPad Pro 11"',
+                'device_type': 'Tablet',
+                'complaint': 'Ganti baterai drop kembung.',
+                'status': 'selesai',
+                'priority': 'normal',
+                'estimation': 'Selesai',
+                'cost': 1200000,
+                'technician': tech_user,
+                'days_ago': 2
             }
         ]
 
+        from django.utils import timezone
         for ticket_info in tickets_data:
-            Ticket.objects.create(**ticket_info)
+            days_ago = ticket_info.pop('days_ago', None)
+            t = Ticket.objects.create(**ticket_info)
+            if days_ago is not None:
+                custom_date = timezone.now() - timezone.timedelta(days=days_ago)
+                t.created_at = custom_date
+                t.updated_at = custom_date
+                t.save()
 
         self.stdout.write(f'Created {len(tickets_data)} sample tickets.')
 

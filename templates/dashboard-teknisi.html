@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="description" content="Dashboard Teknisi - GadgetCare">
     <link rel="stylesheet" href="{% static 'css/dashboard-teknisi.css' %}">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('colors-mode') || 'light';
+            document.documentElement.setAttribute('data-colors-mode', savedTheme);
+        })();
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <title>Dashboard Teknisi | GadgetCare</title>
 </head>
@@ -38,7 +44,7 @@
                     <span>Inventaris</span>
                 </a>
                 
-                <a href="#" class="nav-item">
+                <a href="{% url 'dashboard_laporan' %}" class="nav-item">
                     <i data-lucide="bar-chart-3" class="nav-item__icon" stroke-width="1.5"></i>
                     <span>Laporan</span>
                 </a>
@@ -73,6 +79,10 @@
                 </form>
                 
                 <div class="header__actions">
+                    <button class="header__theme-toggle" id="theme-toggle-btn" aria-label="Ganti Tema" type="button">
+                        <i data-lucide="moon" size="20" id="theme-icon"></i>
+                    </button>
+                    
                     <button class="header__notification" aria-label="Notifikasi" type="button">
                         <i data-lucide="bell" stroke-width="1.5" aria-hidden="true"></i>
                         <span class="header__notification-badge" hidden></span>
@@ -358,6 +368,33 @@
         // Initialize Lucide icons after DOM load
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
+            
+            // Theme Switcher Logic
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-colors-mode', theme);
+                localStorage.setItem('colors-mode', theme);
+                if (themeIcon) {
+                    themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+                    lucide.createIcons();
+                }
+            }
+            
+            const savedTheme = localStorage.getItem('colors-mode') || 'light';
+            if (themeIcon) {
+                themeIcon.setAttribute('data-lucide', savedTheme === 'dark' ? 'sun' : 'moon');
+                lucide.createIcons();
+            }
+            
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', function() {
+                    const currentTheme = document.documentElement.getAttribute('data-colors-mode') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    applyTheme(newTheme);
+                });
+            }
             
             // Mobile sidebar toggle
             const toggle = document.getElementById('mobile-menu-toggle');

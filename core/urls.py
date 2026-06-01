@@ -17,6 +17,7 @@ from .views import (
     adjust_stock,
     riwayat_inventoris,
     dashboard_pengaturan,
+    dashboard_laporan,
 )
 
 urlpatterns = [
@@ -41,4 +42,5 @@ urlpatterns = [
     
     # Settings route
     path('dashboard-teknisi/pengaturan/', dashboard_pengaturan, name='dashboard_pengaturan'),
+    path('dashboard-teknisi/laporan/', dashboard_laporan, name='dashboard_laporan'),
 ]

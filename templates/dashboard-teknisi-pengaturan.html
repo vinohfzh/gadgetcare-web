@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="description" content="Profil & Pengaturan Teknisi - GadgetCare">
     <link rel="stylesheet" href="{% static 'css/dashboard-teknisi.css' %}">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('colors-mode') || 'light';
+            document.documentElement.setAttribute('data-colors-mode', savedTheme);
+        })();
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <title>Profil & Pengaturan | GadgetCare</title>
 </head>
@@ -38,7 +44,7 @@
                     <span>Inventaris</span>
                 </a>
                 
-                <a href="#" class="nav-item">
+                <a href="{% url 'dashboard_laporan' %}" class="nav-item">
                     <i data-lucide="bar-chart-3" class="nav-item__icon" stroke-width="1.5"></i>
                     <span>Laporan</span>
                 </a>
@@ -73,6 +79,10 @@
                 </div>
                 
                 <div class="header__actions">
+                    <button class="header__theme-toggle" id="theme-toggle-btn" aria-label="Ganti Tema" type="button">
+                        <i data-lucide="moon" size="20" id="theme-icon"></i>
+                    </button>
+
                     <button class="header__notification" aria-label="Notifikasi" type="button">
                         <i data-lucide="bell" stroke-width="1.5" aria-hidden="true"></i>
                         <span class="header__notification-badge" hidden></span>
@@ -520,7 +530,60 @@
                     showToast('Semua notifikasi ditandai sebagai telah dibaca!');
                 });
             }
+
+            // --- Theme Switcher ---
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const themeIcon = document.getElementById('theme-icon');
+            const root = document.documentElement;
+
+            function applyTheme(mode) {
+                root.setAttribute('data-colors-mode', mode);
+                localStorage.setItem('colors-mode', mode);
+                if (themeIcon) {
+                    themeIcon.setAttribute('data-lucide', mode === 'dark' ? 'sun' : 'moon');
+                    lucide.createIcons();
+                }
+            }
+
+            if (themeToggleBtn) {
+                const savedTheme = localStorage.getItem('colors-mode') || 'light';
+                applyTheme(savedTheme);
+
+                themeToggleBtn.addEventListener('click', function() {
+                    const current = root.getAttribute('data-colors-mode');
+                    applyTheme(current === 'dark' ? 'light' : 'dark');
+                });
+            }
+
+            // Mobile sidebar toggle
+            const toggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+
+            if (toggle && sidebar) {
+                toggle.addEventListener('click', function() {
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !isExpanded);
+                    sidebar.classList.toggle('sidebar--open');
+                    document.body.classList.toggle('sidebar-open');
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 1024 &&
+                        sidebar.classList.contains('sidebar--open') &&
+                        !sidebar.contains(e.target) &&
+                        !toggle.contains(e.target)) {
+                        sidebar.classList.remove('sidebar--open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                        document.body.classList.remove('sidebar-open');
+                    }
+                });
+            }
         });
     </script>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="btn btn--icon mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="sidebar">
+        <i data-lucide="menu" size="24" aria-hidden="true"></i>
+    </button>
 </body>
 </html>

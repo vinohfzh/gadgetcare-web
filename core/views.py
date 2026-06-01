@@ -704,3 +704,157 @@ def dashboard_pengaturan(request):
     }
     
     return render(request, 'dashboard-teknisi-pengaturan.html', context)
+
+
+@login_required
+def dashboard_laporan(request):
+    # Authorization check
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'teknisi':
+        messages.error(request, 'Anda tidak memiliki hak akses untuk halaman ini.')
+        return redirect('cek_status')
+    
+    from django.utils import timezone
+    from django.db.models import Sum, Q, Avg
+    from django.core.paginator import Paginator
+    import csv
+    from django.http import HttpResponse
+    
+    # 1. Base Query - Completed repairs for this technician
+    completed_tickets = Ticket.objects.filter(status='selesai', technician=request.user).order_by('-updated_at')
+    
+    # 2. Date Filtering
+    date_filter = request.GET.get('date_filter', 'all').strip()
+    now = timezone.now()
+    
+    if date_filter == '7_days':
+        start_date = now - timezone.timedelta(days=7)
+        completed_tickets = completed_tickets.filter(updated_at__gte=start_date)
+    elif date_filter == '30_days':
+        start_date = now - timezone.timedelta(days=30)
+        completed_tickets = completed_tickets.filter(updated_at__gte=start_date)
+    elif date_filter == 'this_month':
+        completed_tickets = completed_tickets.filter(updated_at__year=now.year, updated_at__month=now.month)
+    
+    # 3. Search Query Filtering
+    q = request.GET.get('q', '').strip()
+    if q:
+        completed_tickets = completed_tickets.filter(
+            Q(ticket_number__icontains=q) |
+            Q(customer_name__icontains=q) |
+            Q(device_name__icontains=q)
+        )
+        
+    # 4. Device Type Filtering
+    selected_device_type = request.GET.get('device_type', '').strip()
+    if selected_device_type:
+        completed_tickets = completed_tickets.filter(device_type=selected_device_type)
+        
+    # 5. CSV Export Action
+    if request.GET.get('export') == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="Laporan_Servis_GC_{timezone.localdate()}.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['ID Tiket', 'Pelanggan', 'No. Telepon', 'Perangkat', 'Tipe Perangkat', 'Keluhan', 'Tanggal Selesai', 'Biaya (Rp)'])
+        
+        for t in completed_tickets:
+            date_str = timezone.localtime(t.updated_at).strftime('%Y-%m-%d %H:%M')
+            writer.writerow([
+                t.ticket_number,
+                t.customer_name,
+                t.customer_phone or '',
+                t.device_name,
+                t.device_type,
+                t.complaint,
+                date_str,
+                t.cost
+            ])
+        return response
+        
+    # 6. Calculate Metrics (month-to-date and all-time stats)
+    tech_all_completed = Ticket.objects.filter(status='selesai', technician=request.user)
+    
+    # Bulan ini (Total selesai)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    selesai_bulan_ini = tech_all_completed.filter(updated_at__gte=month_start).count()
+    
+    # Total pendapatan (bulan ini vs total)
+    pendapatan_bulan_ini = tech_all_completed.filter(updated_at__gte=month_start).aggregate(total=Sum('cost'))['total'] or 0
+    total_pendapatan = tech_all_completed.aggregate(total=Sum('cost'))['total'] or 0
+    
+    # Rata-rata biaya servis
+    avg_cost = tech_all_completed.aggregate(avg=Avg('cost'))['avg'] or 0
+    
+    # Perbaikan aktif (sedang dalam perbaikan atau diagnosa)
+    perbaikan_aktif_count = Ticket.objects.filter(
+        technician=request.user,
+        status__in=['diagnosa', 'perbaikan']
+    ).count()
+    
+    # 7. Device type choices for filter dropdown
+    device_types = Ticket.objects.filter(technician=request.user).values_list('device_type', flat=True).distinct()
+    device_types = [dt for dt in device_types if dt]
+    
+    # 8. Charts Data Calculation
+    # Chart 1: Completed repairs trend (last 7 days)
+    days_labels = []
+    days_counts = []
+    for i in range(6, -1, -1):
+        target_day = timezone.localdate() - timezone.timedelta(days=i)
+        day_count = tech_all_completed.filter(updated_at__date=target_day).count()
+        days_labels.append(target_day.strftime('%d %b'))
+        days_counts.append(day_count)
+        
+    # Chart 2: Device distribution percentages (Top 3 + Others)
+    device_counts = {}
+    total_devices = tech_all_completed.count()
+    if total_devices > 0:
+        for dt in tech_all_completed.values_list('device_type', flat=True):
+            if dt:
+                device_counts[dt] = device_counts.get(dt, 0) + 1
+        
+        # Sort and take top 3
+        sorted_devices = sorted(device_counts.items(), key=lambda x: x[1], reverse=True)
+        top_devices = sorted_devices[:3]
+        others_count = sum(x[1] for x in sorted_devices[3:])
+        
+        chart_device_data = []
+        for name, count in top_devices:
+            pct = round((count / total_devices) * 100)
+            chart_device_data.append({'name': name, 'count': count, 'pct': pct})
+        if others_count > 0:
+            pct = round((others_count / total_devices) * 100)
+            chart_device_data.append({'name': 'Lain-lain', 'count': others_count, 'pct': pct})
+    else:
+        chart_device_data = []
+        
+    # 9. Pagination
+    paginator = Paginator(completed_tickets, 10)  # Show 10 completed repairs per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    available_tickets = Ticket.objects.filter(status='menunggu', technician__isnull=True)
+    
+    context = {
+        'tickets': page_obj,
+        'q': q,
+        'date_filter': date_filter,
+        'selected_device_type': selected_device_type,
+        'device_types': device_types,
+        
+        # Metrics
+        'selesai_bulan_ini': selesai_bulan_ini,
+        'pendapatan_bulan_ini': pendapatan_bulan_ini,
+        'total_pendapatan': total_pendapatan,
+        'avg_cost': avg_cost,
+        'perbaikan_aktif_count': perbaikan_aktif_count,
+        
+        # Chart Data
+        'chart_days_labels': days_labels,
+        'chart_days_counts': days_counts,
+        'chart_device_data': chart_device_data,
+        
+        'available_tickets': available_tickets,
+    }
+    
+    return render(request, 'dashboard-teknisi-laporan.html', context)

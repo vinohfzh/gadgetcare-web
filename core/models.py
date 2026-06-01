@@ -30,12 +30,14 @@ class Ticket(models.Model):
     
     ticket_number = models.CharField(max_length=20, unique=True)
     customer_name = models.CharField(max_length=100, default='Pelanggan')
+    customer_phone = models.CharField(max_length=20, blank=True, null=True, default='')
     device_name = models.CharField(max_length=100)
     device_type = models.CharField(max_length=50) # e.g. Laptop, Smartphone, Tablet
     complaint = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='menunggu')
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='normal')
     estimation = models.CharField(max_length=50, default='2 - 3 Hari')
+    cost = models.IntegerField(default=0)
     technician = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tickets')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
